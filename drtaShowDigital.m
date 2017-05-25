@@ -1,0 +1,136 @@
+function  drtaShowDigital(handles)
+%UNTITLED Summary of this function goes here
+%   Detailed explanation goes here
+
+%This will plot the non-spike traces (traces reporting on
+%digital values, sniffing, etc
+figure(handles.w.drtaBrowseTraces)
+
+noch=6;
+left_axis=0.17;
+right_axis=0.78;
+
+%Get the data
+scaling = handles.draq_p.scaling;
+offset = handles.draq_p.offset;
+samp_bef=floor(handles.draq_p.ActualRate*handles.p.dt_pre_snip);
+samp_aft=floor(handles.draq_p.ActualRate*handles.p.dt_post_snip);
+
+
+
+
+%Get the data for this trial
+
+data=drtaGetTraceData(handles);
+
+
+%17 trigger
+%18 sniffing
+%19 lick sensor
+%20 mouse head
+%21 photodiode
+%22 digital input
+
+%plot trigger (17)
+this_record=17;
+%trig=data_this_trial(floor((this_record-1)*handles.draq_p.ActualRate*handles.draq_p.sec_per_trigger):floor(this_record*handles.draq_p.ActualRate*handles.draq_p.sec_per_trigger));
+trig=data(:,this_record);
+
+%Plot the trigger signal
+bottom=0.12+(0.80/noch)*(1-0.5);
+height=0.92*0.85/noch;
+s_handle(1)=subplot('Position', [left_axis bottom right_axis height]);
+ii_from=floor((handles.draq_p.acquire_display_start+handles.p.start_display_time)...
+    *handles.draq_p.ActualRate+1);
+ii_to=floor((handles.draq_p.acquire_display_start+handles.p.start_display_time...
+    +handles.p.display_interval)*handles.draq_p.ActualRate)-2000;
+%trig = data(:,17);
+plot(trig(ii_from:ii_to));
+
+%xlabel('Time (sec)');
+ylabel('Trigger');
+dt=handles.p.display_interval/5;
+dt=round(dt*10^(-floor(log10(dt))))/10^(-floor(log10(dt)));
+d_samples=dt*handles.draq_p.ActualRate;
+set(gca,'XTick',0:d_samples:handles.p.display_interval*handles.draq_p.ActualRate);
+time=handles.p.start_display_time;
+jj=1;
+while time<(handles.p.start_display_time+handles.p.display_interval)
+    tick_label{jj}=num2str(time);
+    time=time+dt;
+    jj=jj+1;
+end
+tick_label{jj}=num2str(time);
+set(gca,'XTickLabel',tick_label);
+
+xlim(s_handle(1),[1 1+handles.p.display_interval*handles.draq_p.ActualRate]);
+ylim(s_handle(1),[1500 3000]);
+
+
+%Plot 18 to 21
+
+for (ii=18:handles.draq_p.no_chans-1)
+    bottom=0.12+(0.80/noch)*(ii-16-0.5);
+    height=0.92*0.85/noch;
+    s_handle(ii-16)=subplot('Position', [left_axis bottom right_axis height]);
+    
+    this_data=[];
+    %this_data=data_this_trial(floor((ii-1)*handles.draq_p.ActualRate*handles.draq_p.sec_per_trigger):floor(ii*handles.draq_p.ActualRate*handles.draq_p.sec_per_trigger));
+    this_data=data(:,ii);
+    
+    plot(this_data(ii_from:ii_to),'-b');
+    
+    if (handles.p.exc_sn==1)&(ii==19)
+        [pkt,lct]=findpeaks(abs(this_data(ii_from+1:ii_to)-this_data(ii_from:ii_to-1)),'MinPeakHeight',handles.p.exc_sn_thr);
+        hold on
+        plot(lct,this_data(ii_from+lct),'or')
+        hold off
+    end
+    
+    min_y=min(this_data(ii_from:ii_to));
+    max_y=max(this_data(ii_from:ii_to));
+    if max_y==min_y
+        this_y=max_y;
+        max_y=this_y+1;
+        min_y=this_y-1;
+    end
+    ylim(s_handle(ii-16),[min_y-0.1*(max_y-min_y) max_y+0.1*(max_y-min_y)]);
+    
+    xlim(s_handle(ii-16),[1 1+handles.p.display_interval*handles.draq_p.ActualRate]);
+    ylabel(s_handle(ii-16),num2str(ii-16));
+    
+    set(gca,'XTick',0:d_samples:handles.p.display_interval*handles.draq_p.ActualRate);
+    set(gca,'XTickLabel','');
+     
+    switch ii
+        case 18
+            ylabel('Sniffing');
+        case 19
+            ylabel('Lick');
+        case 20
+            ylabel('In port');
+        case 21
+            ylabel('Diode');
+    end
+    
+end
+
+
+
+bottom=0.12+(0.80/noch)*(handles.draq_p.no_chans-16-0.5);
+height=0.92*0.85/noch;
+s_handle(handles.draq_p.no_chans-16)=subplot('Position', [left_axis bottom right_axis height]);
+
+this_data=[];
+this_data=data(:,22);
+
+shiftdata_all=bitand(this_data,1+2+4+8+16);
+plot(shiftdata_all(ii_from:ii_to));
+ylim(s_handle(handles.draq_p.no_chans-16),[0 35]);
+xlim(s_handle(handles.draq_p.no_chans-16),[1 1+handles.p.display_interval*handles.draq_p.ActualRate]);
+ylabel('Digital');
+
+
+pffft=1
+
+
