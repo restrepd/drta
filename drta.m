@@ -22,7 +22,7 @@ function varargout = drta(varargin)
 
 % Edit the above text to modify the response to help drta
 
-% Last Modified by GUIDE v2.5 10-May-2017 21:14:30
+% Last Modified by GUIDE v2.5 26-May-2017 17:36:19
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -71,6 +71,24 @@ if strcmp('diegorereposmbp.ucdenver.pvt',getComputerName)||strcmp('diego-restrep
     moddatetag = moddatedir.date;
     set(handles.drtaVersion,'String',['ver ',moddatetag]);
 end
+
+
+handles.p.trialNo=2;
+handles.p.low_filter=1000;
+handles.p.high_filter=5000;
+handles.p.whichPlot=1;
+handles.p.lastTrace=-1;
+handles.p.exclude_secs=2;
+handles.p.set2p5SD=0;
+handles.p.setm2p5SD=0;
+handles.p.setnxSD=0;
+handles.p.nxSD=2.5;
+handles.p.showLicks=1;
+handles.p.exc_sn=0;
+handles.p.read_entire_file=0;
+handles.p.setThr=0;
+handles.p.thrToSet=0;
+handles.p.which_protocol=1;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -242,21 +260,21 @@ handles.draq_p.prev_ylim(1:17)=4000;
 handles.draq_p.no_chans=22;
 handles.draq_p.acquire_display_start=0;
 handles.draq_p.inp_max=10;
-handles.p.trialNo=2;
-handles.p.low_filter=1000;
-handles.p.high_filter=5000;
-handles.p.whichPlot=1;
-handles.p.lastTrace=-1;
-handles.p.exclude_secs=2;
-handles.p.set2p5SD=0;
-handles.p.setm2p5SD=0;
-handles.p.setnxSD=0;
-handles.p.nxSD=2.5;
-handles.p.showLicks=1;
-handles.p.exc_sn=0;
-handles.p.read_entire_file=0;
-handles.p.setThr=0;
-handles.p.thrToSet=0;
+% handles.p.trialNo=2;
+% handles.p.low_filter=1000;
+% handles.p.high_filter=5000;
+% handles.p.whichPlot=1;
+% handles.p.lastTrace=-1;
+% handles.p.exclude_secs=2;
+% handles.p.set2p5SD=0;
+% handles.p.setm2p5SD=0;
+% handles.p.setnxSD=0;
+% handles.p.nxSD=2.5;
+% handles.p.showLicks=1;
+% handles.p.exc_sn=0;
+% handles.p.read_entire_file=0;
+% handles.p.setThr=0;
+% handles.p.thrToSet=0;
 
 
 
@@ -403,7 +421,7 @@ if exist([handles.p.fullName(1:end-3),'mat'],'file')==2
     end
 else
     %Setup the matlab header file
-    [handles.draq_p,handles.draq_d]=drta_read_Intan_RHD2000_header(handles.p.fullName);
+    [handles.draq_p,handles.draq_d]=drta_read_Intan_RHD2000_header(handles.p.fullName,handles.p.which_protocol);
 end
 
 
@@ -419,21 +437,22 @@ handles.draq_p.prev_ylim(1:17)=4000;
 handles.draq_p.no_chans=22;
 handles.draq_p.acquire_display_start=0;
 handles.draq_p.inp_max=10;
-handles.p.trialNo=2;
-handles.p.low_filter=1000;
-handles.p.high_filter=5000;
-handles.p.whichPlot=1;
-handles.p.lastTrace=-1;
-handles.p.exclude_secs=2;
-handles.p.set2p5SD=0;
-handles.p.setm2p5SD=0;
-handles.p.setnxSD=0;
-handles.p.nxSD=2.5;
-handles.p.showLicks=1;
-handles.p.exc_sn=0;
-handles.p.read_entire_file=0;
-handles.p.setThr=0;
-handles.p.thrToSet=0;
+% handles.p.trialNo=2;
+% handles.p.low_filter=1000;
+% handles.p.high_filter=5000;
+% handles.p.whichPlot=1;
+% handles.p.lastTrace=-1;
+% handles.p.exclude_secs=2;
+% handles.p.set2p5SD=0;
+% handles.p.setm2p5SD=0;
+% handles.p.setnxSD=0;
+% handles.p.nxSD=2.5;
+% handles.p.showLicks=1;
+% handles.p.exc_sn=0;
+% handles.p.read_entire_file=0;
+% handles.p.setThr=0;
+% handles.p.thrToSet=0;
+% handles.p.which_protocol=1;
 
 
 
@@ -549,3 +568,28 @@ drtaBrowseTraces('updateHandles',h,eventdata,handles);
 drtaBrowseTraces('updateBrowseTraces',h);
 
 pfft=1
+
+
+% --- Executes on selection change in whichProtocol.
+function whichProtocol_Callback(hObject, eventdata, handles)
+% hObject    handle to whichProtocol (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns whichProtocol contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from whichProtocol
+handles.p.which_protocol=get(hObject,'Value');
+% Update handles structure
+guidata(hObject, handles);
+
+% --- Executes during object creation, after setting all properties.
+function whichProtocol_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to whichProtocol (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

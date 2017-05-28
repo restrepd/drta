@@ -76,21 +76,6 @@ function varargout = drtaBrowseTraces_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 
 
-% % --- Executes on selection change in draqPSWhichChan.
-% function draqPSWhichChan_Callback(hObject, eventdata, handles)
-% % hObject    handle to draqPSWhichChan (see GCBO)
-% % eventdata  reserved - to be defined in a future version of MATLAB
-% % handles    structure with handles and user data (see GUIDATA)
-% 
-% % Hints: contents = get(hObject,'String') returns draqPSWhichChan contents as cell array
-% %        contents{get(hObject,'Value')} returns selected item from draqPSWhichChan
-% handles.p.which_channel=get(hObject,'Value');
-% 
-% % Update all handles.p structures
-% drta('drtaUpdateAllHandlespw',handles.w.drta,handles);
-% % Update handles structure
-% %guidata(hObject, handles);
-% drtaPlotBrowseTraces(handles);
 
 % --- Executes during object creation, after setting all properties.
 function draqPSWhichChan_CreateFcn(hObject, eventdata, handles)
@@ -517,33 +502,33 @@ function figure1_WindowButtonDownFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %This function sets a threshold at the voltage clicked by the user
-
-set(hObject,'Units','normalized');
-mouse_loc=get(hObject,'CurrentPoint');
-scaling = handles.draq_p.scaling;
-offset = handles.draq_p.offset;
-
-if handles.p.which_display==1
-    for (ii=1:handles.draq_p.no_spike_ch)
-        if ((mouse_loc(2)<handles.draq_p.fig_max(ii))&&(mouse_loc(2)>handles.draq_p.fig_min(ii)))
-            handles.p.threshold(ii)=((mouse_loc(2)-handles.draq_p.fig_min(ii))/(handles.draq_p.fig_max(ii)...
-                -handles.draq_p.fig_min(ii)))*(2*handles.draq_p.prev_ylim(ii))-handles.draq_p.prev_ylim(ii);  
-        end
-    end
-else
-   ii=handles.p.which_display-1;
-   handles.p.threshold(ii)=((mouse_loc(2)-handles.draq_p.fig_min(ii))/(handles.draq_p.fig_max(ii)-...
-       handles.draq_p.fig_min(ii)))*(2*handles.draq_p.prev_ylim(ii))-handles.draq_p.prev_ylim(ii);
-
-end
-
-% Update all handles.p structures
-handles.p.set2p5SD=0;
-handles.p.setm2p5SD=0;
-handles.p.setThr=0;
-handles.p.thrToSet=0;
-drta('drtaUpdateAllHandlespw',handles.w.drta,handles);
-drtaPlotBrowseTraces(handles);
+% 
+% set(hObject,'Units','normalized');
+% mouse_loc=get(hObject,'CurrentPoint');
+% scaling = handles.draq_p.scaling;
+% offset = handles.draq_p.offset;
+% 
+% if handles.p.which_display==1
+%     for (ii=1:handles.draq_p.no_spike_ch)
+%         if ((mouse_loc(2)<handles.draq_p.fig_max(ii))&&(mouse_loc(2)>handles.draq_p.fig_min(ii)))
+%             handles.p.threshold(ii)=((mouse_loc(2)-handles.draq_p.fig_min(ii))/(handles.draq_p.fig_max(ii)...
+%                 -handles.draq_p.fig_min(ii)))*(2*handles.draq_p.prev_ylim(ii))-handles.draq_p.prev_ylim(ii);  
+%         end
+%     end
+% else
+%    ii=handles.p.which_display-1;
+%    handles.p.threshold(ii)=((mouse_loc(2)-handles.draq_p.fig_min(ii))/(handles.draq_p.fig_max(ii)-...
+%        handles.draq_p.fig_min(ii)))*(2*handles.draq_p.prev_ylim(ii))-handles.draq_p.prev_ylim(ii);
+% 
+% end
+% 
+% % Update all handles.p structures
+% handles.p.set2p5SD=0;
+% handles.p.setm2p5SD=0;
+% handles.p.setThr=0;
+% handles.p.thrToSet=0;
+% drta('drtaUpdateAllHandlespw',handles.w.drta,handles);
+% drtaPlotBrowseTraces(handles);
 
 
 % --- Executes on mouse press over figure background.
@@ -1276,7 +1261,7 @@ function drtaSetnxSD_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of drtaSetnxSD as text
 %        str2double(get(hObject,'String')) returns contents of drtaSetnxSD as a double
-
+ 
 handles.p.setnxSD=1;
 handles.p.nxSD=str2double(get(hObject,'String'));
 % Update handles structure

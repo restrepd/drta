@@ -326,6 +326,13 @@ switch handles.p.which_c_program
         handles.draq_d.eventlabels{21}='Low Od6';
         handles.draq_d.eventlabels{22}='Short';
         handles.draq_d.eventlabels{23}='Inter';
+    case (11)
+        %Ming laser
+        handles.draq_d.nEvPerType=zeros(1,2);
+        handles.draq_d.nEventTypes=2;
+        handles.draq_d.eventlabels=cell(1,2);
+        handles.draq_d.eventlabels{1}='Laser';
+        handles.draq_d.eventlabels{2}='Inter';
 end
 
 
@@ -486,31 +493,13 @@ for trialNo=1:handles.draq_d.noTrials
                 trialNo
                 pointsleft
             end
+        case (11)
+            %Ming laser
     end
     
     
     
-    
-    if showBits==1
-        bit1=bitand(datavec,2);
-        figure(11)
-        time=1:length(bit1);
-        time=time/handles.draq_p.ActualRate;
-        plot(time,bit1)
-        ylim([-0.5,2.5]);
-        title(['bit1 for trial ' num2str(trialNo)]);
-        bit2=bitand(datavec,4);
-        figure(12)
-        plot(time,bit2)
-        ylim([-0.5,5]);
-        title(['bit2 for trial ' num2str(trialNo)]);
-        figure(13)
-        plot(time,shiftdata);
-        trialNo
-        if trialNo==28
-            trialNo
-        end
-    end
+   
     
     %Enter events
     switch (handles.p.which_c_program)
@@ -1832,6 +1821,26 @@ for trialNo=1:handles.draq_d.noTrials
             end
             
             trialNo
+        case (11)
+            %Ming laser
+
+            if sum(data(:,21)>(handles.draq_d.min_laser+(handles.draq_d.max_laser-handles.draq_d.min_laser)/2))==0
+                %This is an inter trial
+                t_start=3*handles.draq_p.ActualRate;
+                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+t_start/handles.draq_p.ActualRate;
+                handles.draq_d.eventType(handles.draq_d.noEvents)=2;
+                handles.draq_d.nEvPerType(2)=handles.draq_d.nEvPerType(2)+1;
+                 
+            else
+                %This is a laser trial
+                k=find(data(ceil(2.5*handles.draq_p.ActualRate):end,21)>(handles.draq_d.min_laser+(handles.draq_d.max_laser-handles.draq_d.min_laser)/2),1,'first');
+                t_start=ceil(2.5*handles.draq_p.ActualRate)+k-1;
+                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+t_start/handles.draq_p.ActualRate;
+                handles.draq_d.eventType(handles.draq_d.noEvents)=1;
+                handles.draq_d.nEvPerType(1)=handles.draq_d.nEvPerType(1)+1;
+            end
             
     end %case
     toc
@@ -1913,6 +1922,10 @@ switch handles.p.which_c_program
             handles.draq_d.blocks(blockNo,2)=((handles.draq_d.events(evenTypeIndxOdorOn(blockNo*20))...
                 +handles.draq_d.events(evenTypeIndxOdorOn(blockNo*20+1)))/2)+0.001;
         end
+    case (11)
+        %Ming laser
+        handles.draq_d.blocks(1,1)=min(handles.draq_d.events)-0.00001;
+        handles.draq_d.blocks(1,2)=max(handles.draq_d.events)+0.00001;
 end
 
 drta('setTrialNo',handles.w.drta,oldTrialNo);
@@ -1967,6 +1980,9 @@ switch handles.p.which_c_program
     case (10)
         %dropcspm_conc
         msgbox('Saved .mat (dropcspm_conc)');
+    case (11)
+        %dropcspm_conc
+        msgbox('Saved .mat (Ming laser)');
 end
 
 

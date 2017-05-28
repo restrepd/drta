@@ -171,13 +171,12 @@ if (handles.p.whichPlot~=11)
             
             %Calculate 2.5 SD
             %Now plot 3xmedian(std)
-            datavec=data1(ii_from:ii_to,CHID(ii));
-            sz_dvec=size(datavec);
+            datavec=data1(:,CHID(ii));
             
-            sdvec=zeros(1,ceil(sz_dvec(1)/1000));
+            sdvec=zeros(1,ceil(length(datavec)/1000));
             
             jj=0;
-            for kk=1:1000:sz_dvec(1)-1000
+            for kk=1:1000:length(datavec)-1000
                 jj=jj+1;
                 sdvec(jj)=std(datavec(kk:kk+1000));
             end
@@ -200,9 +199,13 @@ if (handles.p.whichPlot~=11)
             
             %Set threshold to nxSD
             nxSD=handles.p.nxSD*median(sdvec);
+            
+            %If nxSD=0 this is the differentially subtracted channel
             if nxSD==0
-                nxSD=100;
+                nxSD=1000;
+                handles.p.threshold(ii)=nxSD;
             end
+            
             if handles.p.setnxSD==1
                 handles.p.threshold(ii)=nxSD;
             end
@@ -360,22 +363,11 @@ if (handles.p.whichPlot~=11)
         %plot(data2(ii_from:ii_to,CHID(ii)));
         hold off
         
-        if (handles.p.do_3xSD==0)
-            plot(data1(ii_from:ii_to,CHID(ii)),'-b');
-            hold on
-            
-        else
-            datavec=data1(ii_from:ii_to,CHID(ii));
-            sz_dvec=size(datavec);
-            sdvec=zeros(1,sz_dvec(1)-(samp_bef+samp_aft));
-            
-            for kk=1:sz_dvec(1)-(samp_bef+samp_aft)
-                sdvec(kk)=std(datavec(kk:kk+(samp_bef+samp_aft)));
-            end
-            plot(3*sdvec,'b');
-            hold on
-            plot(-3*sdvec,'b');
-        end
+        
+        plot(data1(ii_from:ii_to,CHID(ii)),'-b');
+        hold on
+        
+
         
         %This is equation 3.1 of Quiroga et al Neural Comp 16:1661 (2004)
         %         quiroga_thr=4*median(abs(data1(ii_from:ii_to,CHID(ii)))/0.6745);
@@ -383,44 +375,29 @@ if (handles.p.whichPlot~=11)
         %         plot([ii_from ii_to], [-quiroga_thr -quiroga_thr],'-c');
         
         %Now plot 3xmedian(std)
-        datavec=data1(ii_from:ii_to,CHID(ii));
-        sz_dvec=size(datavec);
+        datavec=data1(:,CHID(ii));
         
-        %This does not work....
-        
-        %             sdvec=zeros(1,sz_dvec(1)-(samp_bef+samp_aft));
-        %             for kk=1:sz_dvec(1)-(samp_bef+samp_aft)
-        %                 sdvec(kk)=std(datavec(kk:kk+(samp_bef+samp_aft)));
-        %             end
-        %             three_t_med_SD=3*median(sdvec);
-        
-        
-        sdvec=zeros(1,ceil(sz_dvec(1)/1000));
+        sdvec=zeros(1,ceil(length(datavec)/1000));
         
         jj=0;
-        for kk=1:1000:sz_dvec(1)-1000
+        for kk=1:1000:length(datavec)-1000
             jj=jj+1;
             sdvec(jj)=std(datavec(kk:kk+1000));
         end
         
         
         two_half_med_SD=2.5*median(sdvec);
-        plot([ii_from ii_to],[two_half_med_SD two_half_med_SD],'-c');
+        plot([1 ii_to-ii_from+1],[two_half_med_SD two_half_med_SD],'-c');
         hold on
-        plot([ii_from ii_to],[-two_half_med_SD -two_half_med_SD],'-c');
+        plot([1 ii_to-ii_from+1],[-two_half_med_SD -two_half_med_SD],'-c');
         
         
         three_t_med_SD=3*median(sdvec);
-        plot([ii_from ii_to],[three_t_med_SD three_t_med_SD],'-y');
+        plot([1 ii_to-ii_from+1],[three_t_med_SD three_t_med_SD],'-y');
         hold on
-        plot([ii_from ii_to],[-three_t_med_SD -three_t_med_SD],'-y');
+        plot([1 ii_to-ii_from+1],[-three_t_med_SD -three_t_med_SD],'-y');
         
-        
-        
-        %         if get(handles.auto_thr,'Value')==1
-        %             handles.p.threshold(ii)=auto_sign*quiroga_thr;
-        %             auto_sign=-1*auto_sign;
-        %         end
+
         
         sz_dat=length(data1);
         
@@ -448,9 +425,13 @@ if (handles.p.whichPlot~=11)
         
         %Set threshold to nxSD
         nxSD=handles.p.nxSD*median(sdvec);
+        
+        %If nxSD=0 this is the differentially subtracted channel
         if nxSD==0
-            nxSD=100;
+            nxSD=1000;
+            handles.p.threshold(ii)=nxSD;
         end
+        
         if handles.p.setnxSD==1
             handles.p.threshold(ii)=nxSD;
         end
