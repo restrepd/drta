@@ -1,0 +1,3 @@
+# added by nick. Ignore docx files and pdfs
+*.doc*
+*.pdf
