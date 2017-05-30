@@ -22,7 +22,7 @@ function varargout = drta(varargin)
 
 % Edit the above text to modify the response to help drta
 
-% Last Modified by GUIDE v2.5 26-May-2017 17:36:19
+% Last Modified by GUIDE v2.5 29-May-2017 08:40:00
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -228,10 +228,7 @@ function drtaOpenDG_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 
-[FileName,PathName] = uigetfile('*.*','Select . dg file to open');
-handles.p.fullName=[PathName,FileName];
-handles.p.FileName=FileName;
-handles.p.PathName=PathName;
+FileName=handles.p.FileName;
 set(handles.drtaWhichFile,'String',FileName);
 load([handles.p.fullName(1:end-2),'mat']);
 try
@@ -403,11 +400,7 @@ function open_rhd_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
-[FileName,PathName] = uigetfile('*.*','Select . rhd file to open');
-handles.p.fullName=[PathName,FileName];
-handles.p.FileName=FileName;
-handles.p.PathName=PathName;
+FileName=handles.p.FileName;
 set(handles.drtaWhichFile,'String',FileName);
 
 if exist([handles.p.fullName(1:end-3),'mat'],'file')==2
@@ -592,4 +585,27 @@ function whichProtocol_CreateFcn(hObject, eventdata, handles)
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in openFile.
+function openFile_Callback(hObject, eventdata, handles)
+% hObject    handle to openFile (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+[FileName,PathName] = uigetfile({'*.dg';'*.rhd'},'Select dg or rhd file to open');
+handles.p.fullName=[PathName,FileName];
+handles.p.FileName=FileName;
+handles.p.PathName=PathName;
+% Update handles structure
+guidata(hObject, handles);
+
+
+if strcmp(FileName(end-2:end),'rhd')
+    open_rhd_Callback(hObject, eventdata, handles);
+end
+
+if strcmp(FileName(end-2:end),'.dg')
+    drtaOpenDG_Callback(hObject, eventdata, handles);
 end
