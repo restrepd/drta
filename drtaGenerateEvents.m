@@ -624,7 +624,7 @@ for trialNo=1:handles.draq_d.noTrials
                     
                     %Find Hit (event 3), HitE (event 4), S+ (event 5) and S+E
                     %(event 6)
-                    
+                     
                     if sum(shiftdata==8)>0.05*handles.draq_p.ActualRate
                         hits=find(shiftdata==8,1,'first');
                         

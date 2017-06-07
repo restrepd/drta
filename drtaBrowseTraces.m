@@ -22,7 +22,7 @@ function varargout = drtaBrowseTraces(varargin)
 
 % Edit the above text to modify the response to help drtaBrowseTraces
 
-% Last Modified by GUIDE v2.5 22-May-2017 05:25:39
+% Last Modified by GUIDE v2.5 04-Jun-2017 12:07:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1306,3 +1306,38 @@ function setThr_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in pullThr.
+function pullThr_Callback(hObject, eventdata, handles)
+% hObject    handle to pullThr (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+fullName=handles.p.fullName;
+FileName=handles.p.FileName;
+PathName=handles.p.PathName;
+trialNo=handles.p.trialNo;
+start_display_time=handles.p.start_display_time;
+display_interval=handles.p.display_interval;
+which_channel=handles.p.which_channel;
+which_display=handles.p.which_display;
+trial_ch_processed=handles.p.trial_ch_processed;
+trial_allch_processed=handles.p.trial_allch_processed;
+
+handles.p=drtaPullThreshold;
+
+handles.p.fullName=fullName;
+handles.p.FileName=FileName;
+handles.p.PathName=PathName;
+handles.p.trialNo=trialNo;
+handles.p.start_display_time=start_display_time;
+handles.p.display_interval=display_interval;
+handles.p.which_channel=which_channel;
+handles.p.which_display=which_display;
+handles.p.trial_ch_processed=trial_ch_processed;
+handles.p.trial_allch_processed=trial_allch_processed;
+
+
+drta('drtaUpdateAllHandlespw',handles.w.drta,handles);
+drtaPlotBrowseTraces(handles);

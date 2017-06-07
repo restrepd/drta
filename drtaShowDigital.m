@@ -41,9 +41,10 @@ bottom=0.12+(0.80/noch)*(1-0.5);
 height=0.92*0.85/noch;
 s_handle(1)=subplot('Position', [left_axis bottom right_axis height]);
 ii_from=floor((handles.draq_p.acquire_display_start+handles.p.start_display_time)...
-    *handles.draq_p.ActualRate+1);
+            *handles.draq_p.ActualRate+1);
 ii_to=floor((handles.draq_p.acquire_display_start+handles.p.start_display_time...
-    +handles.p.display_interval)*handles.draq_p.ActualRate)-2000;
+            +handles.p.display_interval)*handles.draq_p.ActualRate);
+
 %trig = data(:,17);
 plot(trig(ii_from:ii_to));
 
