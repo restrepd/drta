@@ -1324,6 +1324,11 @@ which_channel=handles.p.which_channel;
 which_display=handles.p.which_display;
 trial_ch_processed=handles.p.trial_ch_processed;
 trial_allch_processed=handles.p.trial_allch_processed;
+if isfield(handles.p,'tetr_processed')
+    tetr_processed=handles.p.tetr_processed;
+else
+    tetr_processed=[0 0 0 0];
+end
 
 handles.p=drtaPullThreshold;
 
@@ -1337,6 +1342,7 @@ handles.p.which_channel=which_channel;
 handles.p.which_display=which_display;
 handles.p.trial_ch_processed=trial_ch_processed;
 handles.p.trial_allch_processed=trial_allch_processed;
+handles.p.tetr_processed=tetr_processed;
 
 
 drta('drtaUpdateAllHandlespw',handles.w.drta,handles);
