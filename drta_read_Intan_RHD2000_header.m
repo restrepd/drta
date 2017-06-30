@@ -711,9 +711,17 @@ end
 
 fprintf(1, 'Sorting trials...\n');
 sorted_trials=sortrows(trials_to_sort);
-draq_d.t_trial=sorted_trials(:,1)';
-draq_d.start_blockNo=sorted_trials(:,2);
-draq_d.end_blockNo=sorted_trials(:,3);
+
+if sorted_trials(1,2)<1
+    draq_d.t_trial=sorted_trials(2:end,1)';
+    draq_d.start_blockNo=sorted_trials(2:end,2);
+    draq_d.end_blockNo=sorted_trials(2:end,3);
+    draq_d.noTrials=draq_d.noTrials-1;
+else
+    draq_d.t_trial=sorted_trials(:,1)';
+    draq_d.start_blockNo=sorted_trials(:,2);
+    draq_d.end_blockNo=sorted_trials(:,3);
+end
 
 draq_d.t_end=draq_d.t_trial(end)+draq_p.sec_per_trigger;
 fprintf(1, 'Done reading rhd header...\n');
