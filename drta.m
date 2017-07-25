@@ -522,7 +522,17 @@ ii_to=floor((handles.draq_p.acquire_display_start+handles.p.start_display_time..
 ii=19; %These are licsk
 
 old_trial=handles.p.trialNo;
-for trialNo=1:length(handles.draq_d.t_trial)-1
+
+%Find out if the last trial can be read
+handles.p.trialNo=length(handles.draq_d.t_trial);
+try 
+    data_this_trial=drtaGetTraceDataRHD(handles);
+catch
+    handles.draq_d.t_trial=handles.draq_d.t_trial(1:end-1);
+    handles.draq_d.noTrials=handles.draq_d.noTrials-1;
+end
+
+for trialNo=1:length(handles.draq_d.t_trial)
     handles.p.trialNo=trialNo;
     
     %         data_this_trial=handles.draq_d.data(floor(handles.draq_p.ActualRate*handles.draq_p.sec_per_trigger*handles.draq_p.no_chans*(trialNo-1)+1):...

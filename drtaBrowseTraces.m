@@ -22,7 +22,7 @@ function varargout = drtaBrowseTraces(varargin)
 
 % Edit the above text to modify the response to help drtaBrowseTraces
 
-% Last Modified by GUIDE v2.5 04-Jun-2017 12:07:14
+% Last Modified by GUIDE v2.5 25-Jul-2017 15:45:34
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
