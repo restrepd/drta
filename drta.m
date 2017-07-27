@@ -365,6 +365,9 @@ end
 handles.p.trialNo=old_trial;
 handles.p.exc_sn_thr=handles.p.lick_th_frac*mean(ninetynine_per-one_per);
 
+handles.p.lfp.maxLFP=4100;
+handles.p.lfp.minLFP=10;
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -549,6 +552,8 @@ for trialNo=1:length(handles.draq_d.t_trial)
 end
 handles.p.trialNo=old_trial;
 handles.p.exc_sn_thr=handles.p.lick_th_frac*mean(ninetynine_per-one_per);
+handles.p.lfp.maxLFP=9900;
+handles.p.lfp.minLFP=-9900;
 
 % Update handles structure
 guidata(hObject, handles);

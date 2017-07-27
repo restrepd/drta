@@ -484,7 +484,7 @@ for trialNo=1:handles.draq_d.noTrials
                 handles.p.trial_allch_processed(trialNo)=0;
             end
             
-            this_odor_on=find(shiftdata==18,1,'first');
+            this_odor_on=find(shift_dropc_nsampler>1,1,'first');
             pointsleft=216000-(this_odor_on+3*handles.draq_p.ActualRate);
             
             if(pointsleft<1)
