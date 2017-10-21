@@ -18,7 +18,6 @@ for lfpno=1:16
     lfpno
     
     for trNo=1:handles.draq_d.noTrials
-        
         if handles.p.trial_allch_processed(trNo)==1
             
             %Get the data for this LFP

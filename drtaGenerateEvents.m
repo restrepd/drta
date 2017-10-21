@@ -417,7 +417,6 @@ for trialNo=1:handles.draq_d.noTrials
             
         case (2)
             %dropcspm
-            
             timeBefore=str2double(get(handles.timeBeforeFV,'String'));
             firstFV=find(shiftdata30==6,1,'first')/handles.draq_p.ActualRate;
             
@@ -562,7 +561,7 @@ for trialNo=1:handles.draq_d.noTrials
             %dropcspm
             %All the labels without the "E" suffix are assigned the time at
             %odor on
-            
+
             if ~isempty(find(shiftdata>=1,1,'first'))
                 
                 if sum(shiftdata>=1)<3*handles.draq_p.ActualRate
@@ -575,7 +574,7 @@ for trialNo=1:handles.draq_d.noTrials
                 else
                     %Find trial start time (event 1)
                     %Note: This is the same as FINAL_VALVE
-                    if sum(shiftdata==6)>0.9*handles.draq_p.ActualRate
+                    if sum(shiftdata==6)>0.5*handles.draq_p.ActualRate
                         t_start=find(shiftdata==6,1,'first');
                         handles.draq_d.noEvents=handles.draq_d.noEvents+1;
                         handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+t_start/handles.draq_p.ActualRate;
