@@ -371,8 +371,8 @@ if (handles.p.whichPlot~=11)
 %         figure(1)
 %         time=(1:length(data1(ii_from:ii_to,CHID(ii))))/handles.draq_p.ActualRate;
 %         plot(time,data1(ii_from:ii_to,CHID(ii)),'-b');
-%         ylim([-600 600])
-        
+%         ylim([-2500 2500])
+%         
         %This is equation 3.1 of Quiroga et al Neural Comp 16:1661 (2004)
         %         quiroga_thr=4*median(abs(data1(ii_from:ii_to,CHID(ii)))/0.6745);
         %         plot([ii_from ii_to], [quiroga_thr quiroga_thr],'-c');

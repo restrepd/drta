@@ -703,10 +703,10 @@ fprintf(1, 'Sorting trials...\n');
 sorted_trials=sortrows(trials_to_sort);
 
 if sorted_trials(1,2)<1
-    draq_d.t_trial=sorted_trials(2:end,1)';
-    draq_d.start_blockNo=sorted_trials(2:end,2);
-    draq_d.end_blockNo=sorted_trials(2:end,3);
-    draq_d.noTrials=draq_d.noTrials-1;
+    draq_d.t_trial=sorted_trials(sorted_trials(:,2)>1,1)';
+    draq_d.start_blockNo=sorted_trials(sorted_trials(:,2)>1,2);
+    draq_d.end_blockNo=sorted_trials(sorted_trials(:,2)>1,3);
+    draq_d.noTrials=sum(sorted_trials(:,2)>1);
 else
     draq_d.t_trial=sorted_trials(:,1)';
     draq_d.start_blockNo=sorted_trials(:,2);

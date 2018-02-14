@@ -1563,7 +1563,7 @@ for trialNo=1:handles.draq_d.noTrials
                 
             end
         case(10)
-            %dropcspm
+            %dropcspm conc
             %All the labels without the "E" suffix are assigned the time at
             %odor on
             
@@ -1801,7 +1801,7 @@ for trialNo=1:handles.draq_d.noTrials
                     
                 
                     
-                    %Find which odor this is
+                    %Find which odor concentration this is
                     this_odor=find((shift_dropc_nsampler>=2)&(shift_dropc_nsampler<=7),1,'first');
                     if ~isempty(this_odor)
                         handles.draq_d.noEvents=handles.draq_d.noEvents+1;
