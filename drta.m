@@ -22,7 +22,7 @@ function varargout = drta(varargin)
 
 % Edit the above text to modify the response to help drta
 
-% Last Modified by GUIDE v2.5 29-May-2017 08:40:00
+% Last Modified by GUIDE v2.5 02-Mar-2018 17:53:13
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -417,7 +417,7 @@ if exist([handles.p.fullName(1:end-3),'mat'],'file')==2
     end
 else
     %Setup the matlab header file
-    [handles.draq_p,handles.draq_d]=drta_read_Intan_RHD2000_header(handles.p.fullName,handles.p.which_protocol);
+    [handles.draq_p,handles.draq_d]=drta_read_Intan_RHD2000_header(handles.p.fullName,handles.p.which_protocol,handles);
 end
 
 
@@ -554,6 +554,8 @@ handles.p.trialNo=old_trial;
 handles.p.exc_sn_thr=handles.p.lick_th_frac*mean(ninetynine_per-one_per);
 handles.p.lfp.maxLFP=9900;
 handles.p.lfp.minLFP=-9900;
+handles.trial_duration=9;
+handles.pre_dt=6;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -574,8 +576,6 @@ guidata(hObject, handles);
 drtaUpdateAllHandlespw(hObject, handles);
 drtaBrowseTraces('updateHandles',h,eventdata,handles);
 drtaBrowseTraces('updateBrowseTraces',h);
-
-pfft=1
 
 
 % --- Executes on selection change in whichProtocol.
@@ -623,4 +623,55 @@ end
 
 if strcmp(FileName(end-2:end),'.dg')
     drtaOpenDG_Callback(hObject, eventdata, handles);
+end
+
+
+
+function drtaSetTrialDuration_Callback(hObject, eventdata, handles)
+% hObject    handle to drtaSetTrialDuration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of drtaSetTrialDuration as text
+%        str2double(get(hObject,'String')) returns contents of drtaSetTrialDuration as a double
+handles.trial_duration= str2double(get(hObject,'String'));
+% Update handles structure
+guidata(hObject, handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function drtaSetTrialDuration_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to drtaSetTrialDuration (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function drtaPreTime_Callback(hObject, eventdata, handles)
+% hObject    handle to drtaPreTime (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of drtaPreTime as text
+%        str2double(get(hObject,'String')) returns contents of drtaPreTime as a double
+handles.pre_dt= str2double(get(hObject,'String'));
+% Update handles structure
+guidata(hObject, handles);
+
+% --- Executes during object creation, after setting all properties.
+function drtaPreTime_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to drtaPreTime (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end

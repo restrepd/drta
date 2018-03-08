@@ -1,4 +1,4 @@
-function [draq_p,draq_d]=drta_read_Intan_RHD2000_header(filename, which_protocol)
+function [draq_p,draq_d]=drta_read_Intan_RHD2000_header(filename, which_protocol, handles)
 
 % read_Intan_RHD2000_file
 %
@@ -329,7 +329,9 @@ if (data_present)
     
     %We do read in all the t_amplifier and dig data to allow determining the time gaps and the trials
     t_amplifier = zeros(1, num_amplifier_samples);
-    if which_protocol==1
+    
+    switch which_protocol
+        case {1,3}
         board_dig_in_raw = zeros(1, num_board_dig_in_samples);
     end
     board_dig_in_data = zeros(num_board_dig_in_channels, num_board_dig_in_samples);
@@ -385,9 +387,10 @@ if (data_present)
         draq_d.offset_end_adc(i)=ftell(fid);
         draq_d.offset_start_dig(i)=ftell(fid);
         if (num_board_dig_in_channels > 0)
-            if which_protocol==1
+            switch which_protocol
+                case {1,3}
                 board_dig_in_raw(board_dig_in_index:(board_dig_in_index + num_samples_per_data_block - 1)) = fread(fid, num_samples_per_data_block, 'uint16');
-            else
+                case 2
                 board_dig_in_raw = fread(fid, num_samples_per_data_block, 'uint16');
             end
         end
@@ -425,16 +428,17 @@ if (data_present)
     
     fprintf(1, 'Parsing data...\n');
     
-    if which_protocol==1
-        % Extract digital input channels to separate variables.
-        for i=1:num_board_dig_in_channels
-            mask = 2^(board_dig_in_channels(i).native_order) * ones(size(board_dig_in_raw));
-            board_dig_in_data(i, :) = (bitand(board_dig_in_raw, mask) > 0);
-        end
-        for i=1:num_board_dig_out_channels
-            mask = 2^(board_dig_out_channels(i).native_order) * ones(size(board_dig_out_raw));
-            board_dig_out_data(i, :) = (bitand(board_dig_out_raw, mask) > 0);
-        end
+    switch which_protocol
+        case {1,3}
+            % Extract digital input channels to separate variables.
+            for i=1:num_board_dig_in_channels
+                mask = 2^(board_dig_in_channels(i).native_order) * ones(size(board_dig_in_raw));
+                board_dig_in_data(i, :) = (bitand(board_dig_in_raw, mask) > 0);
+            end
+            for i=1:num_board_dig_out_channels
+                mask = 2^(board_dig_out_channels(i).native_order) * ones(size(board_dig_out_raw));
+                board_dig_out_data(i, :) = (bitand(board_dig_out_raw, mask) > 0);
+            end
     end
 
     % Scale voltage levels appropriately.
@@ -474,17 +478,22 @@ end
 
 fprintf(1, 'Finding full trials...\n');
 
-draq_p.dgordra=3;
+draq_p.dgordra=3;  %3 is rhd
 draq_p.show_plot=0;
 draq_p.ActualRate=frequency_parameters.board_adc_sample_rate;
 draq_p.srate=frequency_parameters.board_adc_sample_rate;
 switch which_protocol
     case 1
         draq_p.sec_before_trigger=6;
+        draq_p.sec_per_trigger=9;
     case 2
         draq_p.sec_before_trigger=2;
+        draq_p.sec_per_trigger=9;
+    case 3
+        draq_p.sec_before_trigger=handles.pre_dt;
+        draq_p.sec_per_trigger=handles.trial_duration;
 end
-draq_p.sec_per_trigger=9;
+
 draq_p.pre_gain=0;
 draq_p.scaling=1;
 draq_p.offset=0;
@@ -497,11 +506,11 @@ draq_d.num_board_adc_channels=num_board_adc_channels;
 draq_d.num_board_dig_in_channels=num_board_dig_in_channels;
 draq_d.eval_board_mode=eval_board_mode;
 draq_d.board_dig_in_channels=board_dig_in_channels;
-
+ 
 digital_input=board_dig_in_data(1,:)+2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
     +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:)...
     +64*board_dig_in_data(7,:);
-
+ 
 %Find the trials
 at_end=0;
 ii=1;
@@ -696,6 +705,51 @@ switch which_protocol
         end
         
         fprintf(1, 'Found %d inter trials ...\n',draq_d.noTrials-full_trials);
+        
+    case 3
+        %dropcnsampler
+        %Find the full trials (excluding short trials)
+        while at_end==0
+            delta_ii_first=find(digital_input(ii:end)==16,1,'first');
+            %Found the end of an odor on?
+            if ~isempty(delta_ii_first)
+                %Find the end of odor on
+                ii=ii+delta_ii_first;
+                delta_ii_last=find(digital_input(ii:end)~=16,1,'first');
+                %Was it found?
+                if ~isempty(delta_ii_last)
+                    ii=ii+delta_ii_last;
+                    %Is it too close to the beggining?
+                    if (ii-(draq_p.sec_before_trigger*draq_p.ActualRate))>0
+                        %Is is too close to the end?
+                        if (ii+((draq_p.sec_per_trigger-draq_p.sec_before_trigger)*draq_p.ActualRate))<length(digital_input)
+                            %Full trial
+                            draq_d.noTrials=draq_d.noTrials+1;
+                            %Trial start time goes in column 1
+                            trials_to_sort(draq_d.noTrials,1)=(ii/draq_p.ActualRate)-(draq_p.sec_before_trigger+1);
+                            %Block no at start of trial go in column 2
+                            trials_to_sort(draq_d.noTrials,2)=ceil((trials_to_sort(draq_d.noTrials,1)*draq_p.ActualRate)/num_samples_per_data_block);
+                            %Block no at end of trial go in column 3
+                            trials_to_sort(draq_d.noTrials,3)=trials_to_sort(draq_d.noTrials,2)+ceil((draq_p.sec_per_trigger*draq_p.ActualRate)/num_samples_per_data_block);
+                            full_trial_start(draq_d.noTrials)=ii-draq_p.ActualRate*(draq_p.sec_before_trigger+1);
+                            full_trial_end(draq_d.noTrials)=full_trial_start(draq_d.noTrials)+draq_p.sec_per_trigger*draq_p.ActualRate;
+%                             figure(1)
+%                             plot(digital_input(full_trial_start(draq_d.noTrials):full_trial_end(draq_d.noTrials)))
+                        else
+                            at_end=1;
+                        end
+                    end
+                else
+                    at_end=1;
+                end
+            else
+                at_end=1;
+            end
+        end
+        
+        full_trials=draq_d.noTrials;
+        
+        fprintf(1, 'Found %d full trials...\n',full_trials);
 end
 %Sort the trials and assign them to draq_d
 
@@ -715,7 +769,7 @@ end
 
 draq_d.t_end=draq_d.t_trial(end)+draq_p.sec_per_trigger;
 fprintf(1, 'Done reading rhd header...\n');
- 
+
 return
 
 
