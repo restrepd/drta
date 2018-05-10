@@ -1562,7 +1562,7 @@ for trialNo=1:handles.draq_d.noTrials
                 handles.draq_d.nEvPerType(2)=handles.draq_d.nEvPerType(2)+1;
                 
             end
-        case(10)
+        case (10)
             %dropcspm conc
             %All the labels without the "E" suffix are assigned the time at
             %odor on
