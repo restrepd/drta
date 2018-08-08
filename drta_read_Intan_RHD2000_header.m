@@ -378,10 +378,11 @@ if (data_present)
         end
         draq_d.offset_start_adc(i)=ftell(fid);
         if (num_board_adc_channels > 0)
-            if which_protocol==2
-                board_adc_data(:, board_adc_index:(board_adc_index + num_samples_per_data_block - 1)) = fread(fid, [num_samples_per_data_block, num_board_adc_channels], 'uint16')';
-            else
-                board_adc_data = fread(fid, [num_samples_per_data_block, num_board_adc_channels], 'uint16')';
+            switch which_protocol
+                case {1,3}
+                    board_adc_data = fread(fid, [num_samples_per_data_block, num_board_adc_channels], 'uint16')';
+                case {2,4}
+                    board_adc_data(:, board_adc_index:(board_adc_index + num_samples_per_data_block - 1)) = fread(fid, [num_samples_per_data_block, num_board_adc_channels], 'uint16')';
             end
         end
         draq_d.offset_end_adc(i)=ftell(fid);
@@ -390,7 +391,7 @@ if (data_present)
             switch which_protocol
                 case {1,3}
                 board_dig_in_raw(board_dig_in_index:(board_dig_in_index + num_samples_per_data_block - 1)) = fread(fid, num_samples_per_data_block, 'uint16');
-                case 2
+                case {2,4}
                 board_dig_in_raw = fread(fid, num_samples_per_data_block, 'uint16');
             end
         end
@@ -492,6 +493,9 @@ switch which_protocol
     case 3
         draq_p.sec_before_trigger=handles.pre_dt;
         draq_p.sec_per_trigger=handles.trial_duration;
+    case 4
+        draq_p.sec_before_trigger=10;
+        draq_p.sec_per_trigger=21;
 end
 
 draq_p.pre_gain=0;
@@ -507,9 +511,13 @@ draq_d.num_board_dig_in_channels=num_board_dig_in_channels;
 draq_d.eval_board_mode=eval_board_mode;
 draq_d.board_dig_in_channels=board_dig_in_channels;
  
-digital_input=board_dig_in_data(1,:)+2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
-    +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:)...
-    +64*board_dig_in_data(7,:);
+if ~isempty(board_dig_in_data)
+    digital_input=board_dig_in_data(1,:)+2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
+        +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:)...
+        +64*board_dig_in_data(7,:);
+else
+    digital_input=[];
+end
  
 %Find the trials
 at_end=0;
@@ -750,6 +758,80 @@ switch which_protocol
         full_trials=draq_d.noTrials;
         
         fprintf(1, 'Found %d full trials...\n',full_trials);
+        
+    case 4
+        draq_d.max_laser=max(board_adc_data(1,:));
+        draq_d.min_laser=min(board_adc_data(1,:));
+        
+        %Find the full trials (excluding short trials)
+        while at_end==0
+            delta_ii_first=find(board_adc_data(1,ii:end)>=0.5*(draq_d.max_laser-draq_d.min_laser)+draq_d.min_laser,1,'first');
+            %Found a digital signal
+            if ~isempty(delta_ii_first)
+                %Find the interval
+                ii=ii+delta_ii_first;
+                
+                if ii+(draq_p.sec_per_trigger-draq_p.sec_before_trigger)*draq_p.ActualRate<length(board_adc_data(1,:))
+                    
+                    %Full trial
+                    draq_d.noTrials=draq_d.noTrials+1;
+                    %Trial start time goes in column 1
+                    trials_to_sort(draq_d.noTrials,1)=(ii/draq_p.ActualRate)-(draq_p.sec_before_trigger+1);
+                    %Block no at start of trial go in column 2
+                    trials_to_sort(draq_d.noTrials,2)=ceil((trials_to_sort(draq_d.noTrials,1)*draq_p.ActualRate)/num_samples_per_data_block);
+                    %Block no at end of trial go in column 3
+                    trials_to_sort(draq_d.noTrials,3)=trials_to_sort(draq_d.noTrials,2)+ceil((draq_p.sec_per_trigger*draq_p.ActualRate)/num_samples_per_data_block);
+                    full_trial_start(draq_d.noTrials)=ii-draq_p.ActualRate*(draq_p.sec_before_trigger+1);
+                    full_trial_end(draq_d.noTrials)=full_trial_start(draq_d.noTrials)+draq_p.sec_per_trigger*draq_p.ActualRate;
+                    ii=ii+ceil((draq_p.sec_per_trigger-draq_p.sec_before_trigger)*draq_p.ActualRate);
+                else
+                    at_end=1;
+                end
+            else
+                at_end=1;
+            end
+        end
+        
+        full_trials=draq_d.noTrials;
+        
+        fprintf(1, 'Found %d full trials...\n',full_trials);
+        
+        %Find empty trials
+        last_trial=draq_d.noTrials;
+        
+        trials_to_sort=sortrows(trials_to_sort);
+        
+        fprintf(1, 'Finding inter trials...\n');
+        
+        %Empty trial before the first trial
+        if trials_to_sort(1,1)>draq_p.sec_per_trigger+draq_p.sec_before_trigger
+            draq_d.noTrials=draq_d.noTrials+1;
+            trials_to_sort(draq_d.noTrials,1)= trials_to_sort(1,1)-draq_p.sec_per_trigger;
+            trials_to_sort(draq_d.noTrials,2)=ceil((trials_to_sort(draq_d.noTrials,1)*draq_p.ActualRate)/num_samples_per_data_block);
+            trials_to_sort(draq_d.noTrials,3)=trials_to_sort(draq_d.noTrials,2)+ceil((draq_p.sec_per_trigger*draq_p.ActualRate)/num_samples_per_data_block);
+        end
+        
+        %Empty trials between tirals
+        for ii=2:last_trial
+            if (trials_to_sort(ii,1)-trials_to_sort(ii-1,1)-draq_p.sec_per_trigger)>draq_p.sec_per_trigger
+                
+                %Trial after the last one
+                if ii~=last_trial
+                    draq_d.noTrials=draq_d.noTrials+1;
+                    trials_to_sort(draq_d.noTrials,1)= trials_to_sort(ii-1,1)+draq_p.sec_per_trigger;
+                    trials_to_sort(draq_d.noTrials,2)=ceil((trials_to_sort(draq_d.noTrials,1)*draq_p.ActualRate)/num_samples_per_data_block);
+                    trials_to_sort(draq_d.noTrials,3)=trials_to_sort(draq_d.noTrials,2)+ceil((draq_p.sec_per_trigger*draq_p.ActualRate)/num_samples_per_data_block);
+                end
+                
+                %Trial before the next one
+                draq_d.noTrials=draq_d.noTrials+1;
+                trials_to_sort(draq_d.noTrials,1)= trials_to_sort(ii,1)-draq_p.sec_per_trigger;
+                trials_to_sort(draq_d.noTrials,2)=ceil((trials_to_sort(draq_d.noTrials,1)*draq_p.ActualRate)/num_samples_per_data_block);
+                trials_to_sort(draq_d.noTrials,3)=trials_to_sort(draq_d.noTrials,2)+ceil((draq_p.sec_per_trigger*draq_p.ActualRate)/num_samples_per_data_block);
+            end
+        end
+        
+        fprintf(1, 'Found %d inter trials ...\n',draq_d.noTrials-full_trials);
 end
 %Sort the trials and assign them to draq_d
 

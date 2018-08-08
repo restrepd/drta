@@ -36,48 +36,50 @@ digi = data(:,handles.draq_p.no_chans);
 
 %Please note that bit 1 is not used because it is used in different
 %programs for something else such as splus=1 sminus=0
-shiftdata30=bitand(digi,2+4+8+16);
-
-
-%Please note that there are problems with the start of the trial.
-%Because of this we start looking 2 sec and beyond
-shiftdata30(1:handles.draq_p.ActualRate*handles.p.exclude_secs)=0;
-
-
-odor_on=find(shiftdata30==18,1,'first');
-
-
-%Hit
-if sum(shiftdata30==8)>0.05*handles.draq_p.ActualRate
-    drtaBrowseTraces('setTrialsOutcome',handles.w.drtaBrowseTraces,'Hit ');
-    %set(handles.trialOutcome,'String','Hit ');
-else
-    %Miss
-    if sum(shiftdata30==10)>0.05*handles.draq_p.ActualRate
-        drtaBrowseTraces('setTrialsOutcome',handles.w.drtaBrowseTraces,'Miss');
-        %set(handles.trialOutcome,'String','Miss');
+try
+    shiftdata30=bitand(digi,2+4+8+16);
+    
+    
+    %Please note that there are problems with the start of the trial.
+    %Because of this we start looking 2 sec and beyond
+    shiftdata30(1:handles.draq_p.ActualRate*handles.p.exclude_secs)=0;
+    
+    
+    odor_on=find(shiftdata30==18,1,'first');
+    
+    
+    %Hit
+    if sum(shiftdata30==8)>0.05*handles.draq_p.ActualRate
+        drtaBrowseTraces('setTrialsOutcome',handles.w.drtaBrowseTraces,'Hit ');
+        %set(handles.trialOutcome,'String','Hit ');
     else
-        %CR
-        if sum(shiftdata30==12)>0.05*handles.draq_p.ActualRate
-            drtaBrowseTraces('setTrialsOutcome',handles.w.drtaBrowseTraces,'CR  ');
-            %set(handles.trialOutcome,'String','CR  ');
+        %Miss
+        if sum(shiftdata30==10)>0.05*handles.draq_p.ActualRate
+            drtaBrowseTraces('setTrialsOutcome',handles.w.drtaBrowseTraces,'Miss');
+            %set(handles.trialOutcome,'String','Miss');
         else
-            %FA
-            if sum(shiftdata30==14)>0.05*handles.draq_p.ActualRate
-                drtaBrowseTraces('setTrialsOutcome',handles.w.drtaBrowseTraces,'FA  ');
+            %CR
+            if sum(shiftdata30==12)>0.05*handles.draq_p.ActualRate
+                drtaBrowseTraces('setTrialsOutcome',handles.w.drtaBrowseTraces,'CR  ');
+                %set(handles.trialOutcome,'String','CR  ');
             else
-                %Short
-                if(length(find(shiftdata30>=1,1,'first'))==1)&(length(find(shiftdata30==8,1,'first'))~=1)&(length(find(shiftdata30==10,1,'first'))~=1)...
-                        (length(find(shiftdata30==12,1,'first'))~=1)&(length(find(shiftdata30>0))>handles.draq_p.ActualRate*0.75)
-                    drtaBrowseTraces('setTrialsOutcome',handles.w.drtaBrowseTraces,'Short');
+                %FA
+                if sum(shiftdata30==14)>0.05*handles.draq_p.ActualRate
+                    drtaBrowseTraces('setTrialsOutcome',handles.w.drtaBrowseTraces,'FA  ');
                 else
-                    drtaBrowseTraces('setTrialsOutcome',handles.w.drtaBrowseTraces,'Inter');
+                    %Short
+                    if(length(find(shiftdata30>=1,1,'first'))==1)&(length(find(shiftdata30==8,1,'first'))~=1)&(length(find(shiftdata30==10,1,'first'))~=1)...
+                            (length(find(shiftdata30==12,1,'first'))~=1)&(length(find(shiftdata30>0))>handles.draq_p.ActualRate*0.75)
+                        drtaBrowseTraces('setTrialsOutcome',handles.w.drtaBrowseTraces,'Short');
+                    else
+                        drtaBrowseTraces('setTrialsOutcome',handles.w.drtaBrowseTraces,'Inter');
+                    end
                 end
             end
         end
     end
+catch
 end
-
 
 if (handles.p.whichPlot~=11)
     %Display analog records
@@ -112,8 +114,8 @@ if (handles.p.whichPlot~=11)
                         fpass=[65 95];;
                     case 8 %Gamma 35-95
                         fpass=[35 95];
-                    case {9,10} %Spikes 1000-5000
-                        fpass=[1000 5000];
+                    case {9,10} %Spikes 500-5000
+                        fpass=[500 5000];
                 end
                 bpFilt = designfilt('bandpassiir','FilterOrder',20, ...
                     'HalfPowerFrequency1',fpass(1),'HalfPowerFrequency2',fpass(2), ...
@@ -221,8 +223,10 @@ if (handles.p.whichPlot~=11)
             
             plot(tim,[handles.p.threshold(ii) handles.p.threshold(ii)],'r');
             
-            if ~isempty(odor_on)
-                plot([odor_on odor_on],[-handles.draq_p.prev_ylim(ii) handles.draq_p.prev_ylim(ii)],'r');
+            if exist('odor_on')~=0
+                if ~isempty(odor_on)
+                    plot([odor_on odor_on],[-handles.draq_p.prev_ylim(ii) handles.draq_p.prev_ylim(ii)],'r');
+                end
             end
             
             
@@ -314,13 +318,18 @@ if (handles.p.whichPlot~=11)
                         fpass=[65 95];;
                     case 8 %Gamma 35-95
                         fpass=[35 95];
-                    case {9,10} %Spikes 1000-5000
-                        fpass=[1000 5000];
+                    case {9,10} %Spikes 500 
+                        fpass=[500 5000];
                 end
                 bpFilt = designfilt('bandpassiir','FilterOrder',20, ...
                     'HalfPowerFrequency1',fpass(1),'HalfPowerFrequency2',fpass(2), ...
                     'SampleRate',floor(handles.draq_p.ActualRate));
-                data1=filtfilt(bpFilt,data);
+                
+%                  bpFilt = designfilt('highpassiir','FilterOrder',2, ...
+%                     'PassbandFrequency',fpass(1),'Passbandripple',0.2, ...
+%                     'SampleRate',floor(handles.draq_p.ActualRate));
+
+                 data1=filtfilt(bpFilt,data);
                 
                 if handles.p.whichPlot==10
                     %Calculate the moving variance
@@ -450,8 +459,10 @@ if (handles.p.whichPlot~=11)
         plot(tim,[handles.p.threshold(ii) handles.p.threshold(ii)],'r');
         thr=handles.p.threshold(ii)
         
-        if ~isempty(odor_on)
-            plot([odor_on odor_on],[-handles.draq_p.prev_ylim(ii) handles.draq_p.prev_ylim(ii)],'r');
+        if exist('odor_on')~=0
+            if ~isempty(odor_on)
+                plot([odor_on odor_on],[-handles.draq_p.prev_ylim(ii) handles.draq_p.prev_ylim(ii)],'r');
+            end
         end
         
         

@@ -125,11 +125,14 @@ s_handle(handles.draq_p.no_chans-16)=subplot('Position', [left_axis bottom right
 this_data=[];
 this_data=data(:,22);
 
-shiftdata_all=bitand(this_data,1+2+4+8+16);
-plot(shiftdata_all(ii_from:ii_to));
-ylim(s_handle(handles.draq_p.no_chans-16),[0 35]);
-xlim(s_handle(handles.draq_p.no_chans-16),[1 1+handles.p.display_interval*handles.draq_p.ActualRate]);
-ylabel('Digital');
+try
+    shiftdata_all=bitand(this_data,1+2+4+8+16);
+    plot(shiftdata_all(ii_from:ii_to));
+    ylim(s_handle(handles.draq_p.no_chans-16),[0 35]);
+    xlim(s_handle(handles.draq_p.no_chans-16),[1 1+handles.p.display_interval*handles.draq_p.ActualRate]);
+    ylabel('Digital');
+catch
+end
 
 
 pffft=1

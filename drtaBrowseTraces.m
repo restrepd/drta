@@ -203,7 +203,7 @@ set(handles.drtaSub16,'String',popstr);
 set(handles.drtaSub16,'Value',handles.p.subtractCh(16));
 
 popstr={'Raw','Raw -mean','High Theta 6-10','Theta 2-12','Beta 15-36','Gamma1 35-65',...
-    'Gamma2 65-95','Gamma 35-95','Spikes 1000-5000','Spike var', 'digital'};
+    'Gamma2 65-95','Gamma 35-95','Spikes 500-5000','Spike var', 'digital'};
 set(handles.drtaRadioFilter,'String',popstr);
 set(handles.drtaRadioFilter,'Value',1);
 if isfield(handles.p,'exc_sn')
