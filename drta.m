@@ -609,7 +609,7 @@ function openFile_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-[FileName,PathName] = uigetfile({'*.dg';'*.rhd'},'Select dg or rhd file to open');
+[FileName,PathName] = uigetfile({'*.rhd';'*.dg'},'Select rhd or dg file to open');
 handles.p.fullName=[PathName,FileName];
 handles.p.FileName=FileName;
 handles.p.PathName=PathName;
