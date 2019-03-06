@@ -376,7 +376,7 @@ if (handles.p.whichPlot~=11)
         plot(data1(ii_from:ii_to,CHID(ii)),'-b');
         hold on
         
-        %Commented out plot the trace to use in a figure for publication
+%         Commented out plot the trace to use in a figure for publication
 %         figure(1)
 %         time=(1:length(data1(ii_from:ii_to,CHID(ii))))/handles.draq_p.ActualRate;
 %         plot(time,data1(ii_from:ii_to,CHID(ii)),'-b');

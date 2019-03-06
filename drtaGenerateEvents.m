@@ -614,9 +614,14 @@ for trialNo=1:handles.draq_d.noTrials
                     end
                     
                     %Find odor on (event 2)
+                    found_Hit=sum(shiftdata==8)>0.05*handles.draq_p.ActualRate;
+                    found_Miss=sum(shiftdata==10)>0.05*handles.draq_p.ActualRate;
+                    found_CR=sum(shiftdata==12)>0.05*handles.draq_p.ActualRate;
+                    found_FA=sum(shiftdata==14)>0.05*handles.draq_p.ActualRate;
+                    foundEvent=found_Hit||found_Miss||found_CR||found_FA;
                     
                     found_odor_on=0;
-                    if sum(shiftdata==18)>2.4*handles.draq_p.ActualRate
+                    if (sum(shiftdata==18)>2.4*handles.draq_p.ActualRate)&foundEvent    %Very important: each odor On has to have an event
                         odor_on=find(shiftdata==18,1,'first');
                         found_odor_on=1;
                         handles.draq_d.noEvents=handles.draq_d.noEvents+1;
@@ -634,10 +639,12 @@ for trialNo=1:handles.draq_d.noTrials
                         %Then add it to the list
                         handles.draq_d.noEvents=handles.draq_d.noEvents+1;
                         handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+2;
-                        handles.draq_d.eventType(handles.draq_d.noEvents)=2;
+%                         handles.draq_d.eventType(handles.draq_d.noEvents)=2;
+                        handles.draq_d.eventType(handles.draq_d.noEvents)=17;   %Add it as an inter
                         handles.draq_d.nEvPerType(2)=handles.draq_d.nEvPerType(2)+1;
                     end
                     
+                   
                     %Find Hit (event 3), HitE (event 4), S+ (event 5) and S+E
                     %(event 6)
                     
@@ -670,7 +677,8 @@ for trialNo=1:handles.draq_d.noTrials
                             handles.draq_d.noEvents=handles.draq_d.noEvents+1;
                             handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
                             handles.draq_d.eventType(handles.draq_d.noEvents)=5;
-                            handles.draq_d.nEvPerType(5)=handles.draq_d.nEvPerType(5)+1;
+                            handles.draq_d.nEvPerType(5)=handles.draq_d.nEvPerType(5)+1; 
+                            
                         end
                         
                         %S+E (event 6)
@@ -715,6 +723,7 @@ for trialNo=1:handles.draq_d.noTrials
                             handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
                             handles.draq_d.eventType(handles.draq_d.noEvents)=5;
                             handles.draq_d.nEvPerType(5)=handles.draq_d.nEvPerType(5)+1;
+                            
                         end
                         
                         %S+E (event 6)
@@ -755,6 +764,7 @@ for trialNo=1:handles.draq_d.noTrials
                             handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
                             handles.draq_d.eventType(handles.draq_d.noEvents)=11;
                             handles.draq_d.nEvPerType(11)=handles.draq_d.nEvPerType(11)+1;
+                            
                         end
                         
                         %S-E (event 12)
@@ -795,6 +805,7 @@ for trialNo=1:handles.draq_d.noTrials
                             handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
                             handles.draq_d.eventType(handles.draq_d.noEvents)=11;
                             handles.draq_d.nEvPerType(11)=handles.draq_d.nEvPerType(11)+1;
+                            
                         end
                         
                         %S-E (event 12)
@@ -824,6 +835,8 @@ for trialNo=1:handles.draq_d.noTrials
                     else
                         empty_new_block=empty_new_block+1
                     end
+                    
+                 
                 end
             else
                 handles.draq_d.noEvents=handles.draq_d.noEvents+1;
