@@ -396,6 +396,7 @@ for trialNo=1:handles.draq_d.noTrials
         digi = data(:,handles.draq_p.no_chans);
         
         shiftdata=bitand(digi,2+4+8+16);
+        shiftdatablock=bitand(digi,1+2+4+8+16);
         %shiftdatans=bitand(digi,1+2+4+8);
         shift_dropc_nsampler=bitand(digi,1+2+4+8+16+32);
         %shift_dropc_nsampler=shiftdata(shift_dropc_nsampler<63);
@@ -633,7 +634,7 @@ for trialNo=1:handles.draq_d.noTrials
                     
                     found_odor_on=0;
                     if (sum(shiftdata(t_start:end)==18)>2.4*handles.draq_p.ActualRate)&foundEvent...
-                            &~isempty(find((shift_dropc_nsampler(t_start:end)==18)))                    %Very important: each odor On has to have an event
+                            &~isempty(find((shiftdata(t_start:end)==18)))                    %Very important: each odor On has to have an event
                      
                         odor_on=t_start+find(shiftdata(t_start:end)==18,1,'first');
                         found_odor_on=1;
@@ -838,16 +839,20 @@ for trialNo=1:handles.draq_d.noTrials
                         handles.draq_d.nEvPerType(15)=handles.draq_d.nEvPerType(15)+1;
                     end
                     
-                    %Find new block
-                    blockNoIndx=find(shiftdata>19,1,'first');
-                    if ~isempty(blockNoIndx)
-                        if ~isempty(t_start)
-                            %block_per_index=block_per_index+1;
-                            handles.draq_d.block_per_trial(trialNo)=(shiftdata(blockNoIndx)-18)/2;
-                        end
-                    else
-                        empty_new_block=empty_new_block+1
-                    end
+                    %                     %Find new block
+                    %                     blockNoIndx=find(shiftdatablock>19,1,'first');
+                    %                     if ~isempty(blockNoIndx)
+                    %                         if ~isempty(t_start)
+                    %                             %block_per_index=block_per_index+1;
+                    %                             handles.draq_d.block_per_trial(trialNo)=(shiftdata(blockNoIndx)-18)/2;
+                    %                         end
+                    %                     else
+                    %                         empty_new_block=empty_new_block+1
+                    %                     end
+                    
+                    
+                    handles.draq_d.block_per_trial(trialNo)=floor((trialNo-1)/20)+1;
+                    
                     
                  
                 end
