@@ -1,6 +1,9 @@
 function handles = drtaExcludeBadLFP(handles)
 %   This function excludes bad LFPs
 
+if isfield(handles,'drtachoices')
+    fprintf(1, ['Vetting LFPs...\n']);
+end
 tic
 oldTrialNo=handles.p.trialNo;
 
@@ -15,7 +18,9 @@ no_unit16_per_ch=size_per_ch_bytes/bytes_per_native;
 
 
 for lfpno=1:16
-    lfpno
+    if ~isfield(handles,'drtachoices')
+        lfpno
+    end
     
     for trNo=1:handles.draq_d.noTrials
         if handles.p.trial_allch_processed(trNo)==1
@@ -55,6 +60,9 @@ for lfpno=1:16
 end
 
 handles.p.trialNo=oldTrialNo;
-toc
+
+if ~isfield(handles,'drtachoices')
+    toc
+end
 
 

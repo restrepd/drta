@@ -124,17 +124,43 @@ s_handle(handles.draq_p.no_chans-16)=subplot('Position', [left_axis bottom right
 
 this_data=[];
 this_data=data(:,22);
-
+ 
 try
     shiftdata_all=bitand(this_data,1+2+4+8+16);
+    hold off
     plot(shiftdata_all(ii_from:ii_to));
+    hold on
+    
+    %Draw a red line at odor on
+    shift_dropc_nsampler=bitand(this_data,1+2+4+8+16+32);
+
+    odor_on=[];
+    switch handles.p.which_c_program
+        case 2
+            %dropcspm
+            odor_on=find(shiftdata_all==18,1,'first');
+        case 10
+            %dropcspm conc
+            t_start=find(shift_dropc_nsampler==1,1,'first');
+            if (sum((shift_dropc_nsampler>=2)&(shift_dropc_nsampler<=7))>2.4*handles.draq_p.ActualRate)&...
+                    ~isempty(find((shift_dropc_nsampler(t_start:end)>=2)&(shift_dropc_nsampler(t_start:end)<=7),1,'first'))
+                %                         odor_on=find((shift_dropc_nsampler>=2)&(shift_dropc_nsampler<=7),1,'first');
+                odor_on=t_start+find((shift_dropc_nsampler(t_start:end)>=2)&(shift_dropc_nsampler(t_start:end)<=7),1,'first')-1;
+            end
+    end
+    
+    if ~isempty(odor_on)
+        plot([odor_on odor_on],[0 35],'-r');
+    end
+    
     ylim(s_handle(handles.draq_p.no_chans-16),[0 35]);
     xlim(s_handle(handles.draq_p.no_chans-16),[1 1+handles.p.display_interval*handles.draq_p.ActualRate]);
     ylabel('Digital');
+    
+    
 catch
 end
 
 
-pffft=1
 
 
