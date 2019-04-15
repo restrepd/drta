@@ -405,8 +405,8 @@ for trialNo=1:handles.draq_d.noTrials
     
     
     shiftdata30=shiftdata;
-    shiftdata(1:handles.draq_p.ActualRate*handles.p.exclude_secs)=0;
-    shift_dropc_nsampler(1:handles.draq_p.ActualRate*handles.p.exclude_secs)=0;
+    shiftdata(1:int64(handles.draq_p.ActualRate*handles.p.exclude_secs))=0;
+    shift_dropc_nsampler(1:int64(handles.draq_p.ActualRate*handles.p.exclude_secs))=0;
     
     %Exclude the trials that are off
     switch handles.p.which_c_program
@@ -863,8 +863,6 @@ for trialNo=1:handles.draq_d.noTrials
                 handles.draq_d.nEvPerType(17)=handles.draq_d.nEvPerType(17)+1;
             end
             
-            
-            trialNo
             
         case (3)
             %backgound
@@ -1610,6 +1608,7 @@ for trialNo=1:handles.draq_d.noTrials
                 handles.draq_d.nEvPerType(2)=handles.draq_d.nEvPerType(2)+1;
                 
             end
+            
         case (10)
             %dropcspm conc
             %All the labels without the "E" suffix are assigned the time at
@@ -1652,216 +1651,228 @@ for trialNo=1:handles.draq_d.noTrials
                         
                     end
                     
-                    %Find odor on (event 2)
                     
-                    found_odor_on=0;
-                    %Note, odor on must be longer than 2.4 sec and must take place after final
-                    %valve when shift_dropc_nsampler==1
-                    if (sum((shift_dropc_nsampler(t_start:end)>=2)&(shift_dropc_nsampler(t_start:end)<=7))>2.4*handles.draq_p.ActualRate)&...
-                            ~isempty(find((shift_dropc_nsampler(t_start:end)>=2)&(shift_dropc_nsampler(t_start:end)<=7),1,'first'))
-                        %                         odor_on=find((shift_dropc_nsampler>=2)&(shift_dropc_nsampler<=7),1,'first');
-                        odor_on=t_start+find((shift_dropc_nsampler(t_start:end)>=2)&(shift_dropc_nsampler(t_start:end)<=7),1,'first')-1;
-                        found_odor_on=1;
-                        handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                        handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
-                        handles.draq_d.eventType(handles.draq_d.noEvents)=2;
-                        handles.draq_d.nEvPerType(2)=handles.draq_d.nEvPerType(2)+1;
+                    if exist('t_start')~=0
+                        %Find odor on (event 2)
+                        found_odor_on=0;
+                        %Note, odor on must be longer than 2.4 sec and must take place after final
+                        %valve when shift_dropc_nsampler==1
+                        if (sum((shift_dropc_nsampler(t_start:end)>=2)&(shift_dropc_nsampler(t_start:end)<=7))>2.4*handles.draq_p.ActualRate)&...
+                                ~isempty(find((shift_dropc_nsampler(t_start:end)>=2)&(shift_dropc_nsampler(t_start:end)<=7),1,'first'))
+                            %                         odor_on=find((shift_dropc_nsampler>=2)&(shift_dropc_nsampler<=7),1,'first');
+                            odor_on=t_start+find((shift_dropc_nsampler(t_start:end)>=2)&(shift_dropc_nsampler(t_start:end)<=7),1,'first')-1;
+                            found_odor_on=1;
+                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
+                            handles.draq_d.eventType(handles.draq_d.noEvents)=2;
+                            handles.draq_d.nEvPerType(2)=handles.draq_d.nEvPerType(2)+1;
+                        else
+                            %It is extremely important, every single trial must have an
+                            %accompanying t_start followed by an odor_on
+                            
+                            %First exclude this weird trial
+                            handles.p.trial_ch_processed(1:16,trialNo)=zeros(16,1);
+                            handles.p.trial_allch_processed(trialNo)=0;
+                            
+                            %Then add it to the list as a short
+                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+2;
+                            handles.draq_d.eventType(handles.draq_d.noEvents)=22;
+                            handles.draq_d.nEvPerType(2)=handles.draq_d.nEvPerType(2)+1;
+                        end
+                        
+                        %Now do processing only if odor on was found
+                        if (found_odor_on==1)
+                            %Find Hit (event 3), HitE (event 4), S+ (event 5) and S+E
+                            %(event 6)
+                            
+                            if sum(shift_dropc_nsampler==8)>0.05*handles.draq_p.ActualRate
+                                hits=t_start+find(shift_dropc_nsampler(t_start:end)==8,1,'first');
+                                if generate_dio_bits==1
+                                    dio_bits(:,trialNo)=dio_bits(:,trialNo)-1;
+                                    shiftvec=bitshift( bitand(uint16(dio_bits(:,trialNo)),248), -2);
+                                    fv=shiftvec==6;
+                                    dio_bits(:,trialNo)=dio_bits(:,trialNo)+fv;
+                                end
+                                
+                                %Hit (event 3)
+                                
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=3;
+                                handles.draq_d.nEvPerType(3)=handles.draq_d.nEvPerType(3)+1;
+                                
+                                
+                                %HitE (event 4)
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+hits/handles.draq_p.ActualRate;
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=4;
+                                handles.draq_d.nEvPerType(4)=handles.draq_d.nEvPerType(4)+1;
+                                
+                                %S+ (event 5)
+                                
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=5;
+                                handles.draq_d.nEvPerType(5)=handles.draq_d.nEvPerType(5)+1;
+                                
+                                
+                                %S+E (event 6)
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+hits/handles.draq_p.ActualRate;
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=6;
+                                handles.draq_d.nEvPerType(6)=handles.draq_d.nEvPerType(6)+1;
+                                
+                            end
+                            
+                            %Find Miss (event 7), MissE (event 8), S+ (event 5) and S+E
+                            %(event 6)
+                            
+                            
+                            if sum(shift_dropc_nsampler==10)>0.05*handles.draq_p.ActualRate
+                                miss=t_start+find(shift_dropc_nsampler(t_start:end)==10,1,'first');
+                                if generate_dio_bits==1
+                                    dio_bits(:,trialNo)=dio_bits(:,trialNo)-1;
+                                    shiftvec=bitshift( bitand(uint16(dio_bits(:,trialNo)),248), -2);
+                                    fv=shiftvec==6;
+                                    dio_bits(:,trialNo)=dio_bits(:,trialNo)+fv;
+                                end
+                                
+                                %Miss (event 7)
+                                
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=7;
+                                handles.draq_d.nEvPerType(7)=handles.draq_d.nEvPerType(7)+1;
+                                
+                                
+                                %MissE
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+miss/handles.draq_p.ActualRate;
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=8;
+                                handles.draq_d.nEvPerType(8)=handles.draq_d.nEvPerType(8)+1;
+                                
+                                %S+ (event 5)
+                                
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=5;
+                                handles.draq_d.nEvPerType(5)=handles.draq_d.nEvPerType(5)+1;
+                                
+                                
+                                %S+E (event 6)
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+miss/handles.draq_p.ActualRate;
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=6;
+                                handles.draq_d.nEvPerType(6)=handles.draq_d.nEvPerType(6)+1;
+                                
+                            end
+                            
+                            %Find CR (event 9), CRE (event 10), S- (event 11) and S-E
+                            %(event 12)
+                            
+                            if sum(shift_dropc_nsampler==12)>0.05*handles.draq_p.ActualRate
+                                crej=t_start+find(shift_dropc_nsampler(t_start:end)==12,1,'first');
+                                if generate_dio_bits==1
+                                    dio_bits(:,trialNo)=dio_bits(:,trialNo)-1;
+                                end
+                                
+                                %CR (event 9)
+                                
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=9;
+                                handles.draq_d.nEvPerType(9)=handles.draq_d.nEvPerType(9)+1;
+                                
+                                
+                                %CRE (event 10)
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+crej/handles.draq_p.ActualRate;
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=10;
+                                handles.draq_d.nEvPerType(10)=handles.draq_d.nEvPerType(10)+1;
+                                
+                                %S- (event 11)
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=11;
+                                handles.draq_d.nEvPerType(11)=handles.draq_d.nEvPerType(11)+1;
+                                
+                                
+                                %S-E (event 12)
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+crej/handles.draq_p.ActualRate;
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=12;
+                                handles.draq_d.nEvPerType(12)=handles.draq_d.nEvPerType(12)+1;
+                                
+                            end
+                            
+                            %Find FA (event 13), FAE (event 14), S- (event 11) and S-E
+                            %(event 12)
+                            
+                            if sum(shift_dropc_nsampler(t_start:end)==14)>0.05*handles.draq_p.ActualRate
+                                false_alarm=t_start+find(shift_dropc_nsampler(t_start:end)==14,1,'first');
+                                if generate_dio_bits==1
+                                    dio_bits(:,trialNo)=dio_bits(:,trialNo)-1;
+                                end
+                                
+                                %FA (event 13)
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=13;
+                                handles.draq_d.nEvPerType(13)=handles.draq_d.nEvPerType(13)+1;
+                                
+                                
+                                %FAE
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+false_alarm/handles.draq_p.ActualRate;
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=14;
+                                handles.draq_d.nEvPerType(14)=handles.draq_d.nEvPerType(14)+1;
+                                
+                                %S- (event 11)
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=11;
+                                handles.draq_d.nEvPerType(11)=handles.draq_d.nEvPerType(11)+1;
+                                
+                                %S-E (event 12)
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+false_alarm/handles.draq_p.ActualRate;
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=12;
+                                handles.draq_d.nEvPerType(12)=handles.draq_d.nEvPerType(12)+1;
+                            end
+                            
+                            %Find reinforcement (event 15)
+                            if sum(shift_dropc_nsampler==32)>0.02*handles.draq_p.ActualRate
+                                reinf=t_start+find(shift_dropc_nsampler(t_start:end)==32,1,'first');
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+reinf/handles.draq_p.ActualRate;
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=15;
+                                handles.draq_d.nEvPerType(15)=handles.draq_d.nEvPerType(15)+1;
+                            end
+                            
+                            
+                            %Find which odor concentration this is
+                            this_odor=t_start+find((shift_dropc_nsampler(t_start:end)>=2)&(shift_dropc_nsampler(t_start:end)<=7),1,'first');
+                            if ~isempty(this_odor)
+                                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
+                                this_odor_evNo=shift_dropc_nsampler(this_odor);
+                                handles.draq_d.eventType(handles.draq_d.noEvents)=15+this_odor_evNo-1;
+                                handles.draq_d.nEvPerType(15+this_odor_evNo-1)=handles.draq_d.nEvPerType(15+this_odor_evNo-1)+1;
+                            end
+                        end
+                        
                     else
-                        %It is extremely important, every single trial must have an
-                        %accompanying t_start followed by an odor_on
-                        
-                        %First exclude this weird trial
-                        handles.p.trial_ch_processed(1:16,trialNo)=zeros(16,1);
-                        handles.p.trial_allch_processed(trialNo)=0;
-                        
-                        %Then add it to the list as a short
+                        %This is an intermediate trial
                         handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                        handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+2;
-                        handles.draq_d.eventType(handles.draq_d.noEvents)=22;
-                        handles.draq_d.nEvPerType(2)=handles.draq_d.nEvPerType(2)+1;
-                    end
-                    
-                    %Now do processing only if odor on was found
-                    if (found_odor_on==1)
-                        %Find Hit (event 3), HitE (event 4), S+ (event 5) and S+E
-                        %(event 6)
-                        
-                        if sum(shift_dropc_nsampler==8)>0.05*handles.draq_p.ActualRate
-                            hits=t_start+find(shift_dropc_nsampler(t_start:end)==8,1,'first');
-                            if generate_dio_bits==1
-                                dio_bits(:,trialNo)=dio_bits(:,trialNo)-1;
-                                shiftvec=bitshift( bitand(uint16(dio_bits(:,trialNo)),248), -2);
-                                fv=shiftvec==6;
-                                dio_bits(:,trialNo)=dio_bits(:,trialNo)+fv;
-                            end
-                            
-                            %Hit (event 3)
-                            
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=3;
-                            handles.draq_d.nEvPerType(3)=handles.draq_d.nEvPerType(3)+1;
-                            
-                            
-                            %HitE (event 4)
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+hits/handles.draq_p.ActualRate;
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=4;
-                            handles.draq_d.nEvPerType(4)=handles.draq_d.nEvPerType(4)+1;
-                            
-                            %S+ (event 5)
-                            
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=5;
-                            handles.draq_d.nEvPerType(5)=handles.draq_d.nEvPerType(5)+1;
-                            
-                            
-                            %S+E (event 6)
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+hits/handles.draq_p.ActualRate;
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=6;
-                            handles.draq_d.nEvPerType(6)=handles.draq_d.nEvPerType(6)+1;
-                            
-                        end
-                        
-                        %Find Miss (event 7), MissE (event 8), S+ (event 5) and S+E
-                        %(event 6)
-                        
-                        
-                        if sum(shift_dropc_nsampler==10)>0.05*handles.draq_p.ActualRate
-                            miss=t_start+find(shift_dropc_nsampler(t_start:end)==10,1,'first');
-                            if generate_dio_bits==1
-                                dio_bits(:,trialNo)=dio_bits(:,trialNo)-1;
-                                shiftvec=bitshift( bitand(uint16(dio_bits(:,trialNo)),248), -2);
-                                fv=shiftvec==6;
-                                dio_bits(:,trialNo)=dio_bits(:,trialNo)+fv;
-                            end
-                            
-                            %Miss (event 7)
-                            
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=7;
-                            handles.draq_d.nEvPerType(7)=handles.draq_d.nEvPerType(7)+1;
-                            
-                            
-                            %MissE
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+miss/handles.draq_p.ActualRate;
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=8;
-                            handles.draq_d.nEvPerType(8)=handles.draq_d.nEvPerType(8)+1;
-                            
-                            %S+ (event 5)
-                            
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=5;
-                            handles.draq_d.nEvPerType(5)=handles.draq_d.nEvPerType(5)+1;
-                            
-                            
-                            %S+E (event 6)
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+miss/handles.draq_p.ActualRate;
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=6;
-                            handles.draq_d.nEvPerType(6)=handles.draq_d.nEvPerType(6)+1;
-                            
-                        end
-                        
-                        %Find CR (event 9), CRE (event 10), S- (event 11) and S-E
-                        %(event 12)
-                        
-                        if sum(shift_dropc_nsampler==12)>0.05*handles.draq_p.ActualRate
-                            crej=t_start+find(shift_dropc_nsampler(t_start:end)==12,1,'first');
-                            if generate_dio_bits==1
-                                dio_bits(:,trialNo)=dio_bits(:,trialNo)-1;
-                            end
-                            
-                            %CR (event 9)
-                            
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=9;
-                            handles.draq_d.nEvPerType(9)=handles.draq_d.nEvPerType(9)+1;
-                            
-                            
-                            %CRE (event 10)
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+crej/handles.draq_p.ActualRate;
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=10;
-                            handles.draq_d.nEvPerType(10)=handles.draq_d.nEvPerType(10)+1;
-                            
-                            %S- (event 11)
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=11;
-                            handles.draq_d.nEvPerType(11)=handles.draq_d.nEvPerType(11)+1;
-                            
-                            
-                            %S-E (event 12)
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+crej/handles.draq_p.ActualRate;
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=12;
-                            handles.draq_d.nEvPerType(12)=handles.draq_d.nEvPerType(12)+1;
-                            
-                        end
-                        
-                        %Find FA (event 13), FAE (event 14), S- (event 11) and S-E
-                        %(event 12)
-                        
-                        if sum(shift_dropc_nsampler(t_start:end)==14)>0.05*handles.draq_p.ActualRate
-                            false_alarm=t_start+find(shift_dropc_nsampler(t_start:end)==14,1,'first');
-                            if generate_dio_bits==1
-                                dio_bits(:,trialNo)=dio_bits(:,trialNo)-1;
-                            end
-                            
-                            %FA (event 13)
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=13;
-                            handles.draq_d.nEvPerType(13)=handles.draq_d.nEvPerType(13)+1;
-                            
-                            
-                            %FAE
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+false_alarm/handles.draq_p.ActualRate;
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=14;
-                            handles.draq_d.nEvPerType(14)=handles.draq_d.nEvPerType(14)+1;
-                            
-                            %S- (event 11)
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=11;
-                            handles.draq_d.nEvPerType(11)=handles.draq_d.nEvPerType(11)+1;
-                            
-                            %S-E (event 12)
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+false_alarm/handles.draq_p.ActualRate;
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=12;
-                            handles.draq_d.nEvPerType(12)=handles.draq_d.nEvPerType(12)+1;
-                        end
-                        
-                        %Find reinforcement (event 15)
-                        if sum(shift_dropc_nsampler==32)>0.02*handles.draq_p.ActualRate
-                            reinf=t_start+find(shift_dropc_nsampler(t_start:end)==32,1,'first');
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+reinf/handles.draq_p.ActualRate;
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=15;
-                            handles.draq_d.nEvPerType(15)=handles.draq_d.nEvPerType(15)+1;
-                        end
-                        
-                        
-                        %Find which odor concentration this is
-                        this_odor=t_start+find((shift_dropc_nsampler(t_start:end)>=2)&(shift_dropc_nsampler(t_start:end)<=7),1,'first');
-                        if ~isempty(this_odor)
-                            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
-                            this_odor_evNo=shift_dropc_nsampler(this_odor);
-                            handles.draq_d.eventType(handles.draq_d.noEvents)=15+this_odor_evNo-1;
-                            handles.draq_d.nEvPerType(15+this_odor_evNo-1)=handles.draq_d.nEvPerType(15+this_odor_evNo-1)+1;
-                        end
+                        handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+(length(shift_dropc_nsampler)/3)/handles.draq_p.ActualRate;
+                        handles.draq_d.eventType(handles.draq_d.noEvents)=23;
+                        handles.draq_d.nEvPerType(23)=handles.draq_d.nEvPerType(23)+1;
                     end
                 end
+                
+                
+                
             else
                 %This is an intermediate trial
                 handles.draq_d.noEvents=handles.draq_d.noEvents+1;
@@ -1871,9 +1882,9 @@ for trialNo=1:handles.draq_d.noTrials
             end
             
             % This code is here for troubleshooting
-%             figure(10)
-%             plot(shift_dropc_nsampler)
-%             pffft=1;
+            %             figure(10)
+            %             plot(shift_dropc_nsampler)
+            %             pffft=1;
             
         case (11)
             %Ming laser
