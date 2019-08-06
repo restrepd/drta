@@ -115,29 +115,29 @@ for filNum=handles_choices.drtachoices.first_file:handles_choices.drtachoices.no
         handles.p.trial_ch_processed=ones(16,handles.draq_d.noTrials);
         handles.p.trial_allch_processed=ones(1,handles.draq_d.noTrials);
         
-        if (exist('drta_p')~=0)
-            handles.p.threshold=drta_p.threshold;
-            
-            if (isfield(drta_p,'ch_processed')~=0)
-                handles.p.ch_processed=drta_p.ch_processed;
-            end
-            if (isfield(drta_p,'trial_ch_processed')~=0)
-                handles.p.trial_ch_processed=drta_p.trial_ch_processed;
-            end
-            if (isfield(drta_p,'trial_allch_processed')~=0)
-                handles.p.trial_allch_processed=drta_p.trial_allch_processed;
-            end
-            if (isfield(drta_p,'upper_limit')~=0)
-                handles.p.upper_limit=drta_p.upper_limit;
-                handles.p.lower_limit=drta_p.lower_limit;
-            end
-            if isfield(drta_p,'exc_sn')
-                handles.p.exc_sn=drta_p.exc_sn;
-                %         handles.p.exc_sn_thr=drta_p.exc_sn_thr;
-                %         handles.p.exc_sn_ch=drta_p.exc_sn_ch;
-            end
-            
-        end
+%         if (exist('drta_p')~=0)
+%             handles.p.threshold=drta_p.threshold;
+%             
+%             if (isfield(drta_p,'ch_processed')~=0)
+%                 handles.p.ch_processed=drta_p.ch_processed;
+%             end
+%             if (isfield(drta_p,'trial_ch_processed')~=0)
+%                 handles.p.trial_ch_processed=drta_p.trial_ch_processed;
+%             end
+%             if (isfield(drta_p,'trial_allch_processed')~=0)
+%                 handles.p.trial_allch_processed=drta_p.trial_allch_processed;
+%             end
+%             if (isfield(drta_p,'upper_limit')~=0)
+%                 handles.p.upper_limit=drta_p.upper_limit;
+%                 handles.p.lower_limit=drta_p.lower_limit;
+%             end
+%             if isfield(drta_p,'exc_sn')
+%                 handles.p.exc_sn=drta_p.exc_sn;
+%                 %         handles.p.exc_sn_thr=drta_p.exc_sn_thr;
+%                 %         handles.p.exc_sn_ch=drta_p.exc_sn_ch;
+%             end
+%             
+%         end
         
         handles.p.trialNo=1;
         
@@ -183,7 +183,7 @@ for filNum=handles_choices.drtachoices.first_file:handles_choices.drtachoices.no
     else
         %This is a dg file
         FileName=handles.p.FileName;
-        
+         
         load([handles.p.fullName(1:end-2),'mat']);
         try
             handles.draq_p=params;
@@ -243,29 +243,29 @@ for filNum=handles_choices.drtachoices.first_file:handles_choices.drtachoices.no
         handles.p.trial_ch_processed=ones(16,handles.draq_d.noTrials);
         handles.p.trial_allch_processed=ones(1,handles.draq_d.noTrials);
         
-        if (exist('drta_p')~=0)
-            handles.p.threshold=drta_p.threshold;
-            
-            if (isfield(drta_p,'ch_processed')~=0)
-                handles.p.ch_processed=drta_p.ch_processed;
-            end
-            if (isfield(drta_p,'trial_ch_processed')~=0)
-                handles.p.trial_ch_processed=drta_p.trial_ch_processed;
-            end
-            if (isfield(drta_p,'trial_allch_processed')~=0)
-                handles.p.trial_allch_processed=drta_p.trial_allch_processed;
-            end
-            if (isfield(drta_p,'upper_limit')~=0)
-                handles.p.upper_limit=drta_p.upper_limit;
-                handles.p.lower_limit=drta_p.lower_limit;
-            end
-            if isfield(drta_p,'exc_sn')
-                handles.p.exc_sn=drta_p.exc_sn;
-                %         handles.p.exc_sn_thr=drta_p.exc_sn_thr;
-                %         handles.p.exc_sn_ch=drta_p.exc_sn_ch;
-            end
-            
-        end
+%         if (exist('drta_p')~=0)
+%             handles.p.threshold=drta_p.threshold;
+%             
+%             if (isfield(drta_p,'ch_processed')~=0)
+%                 handles.p.ch_processed=drta_p.ch_processed;
+%             end
+%             if (isfield(drta_p,'trial_ch_processed')~=0)
+%                 handles.p.trial_ch_processed=drta_p.trial_ch_processed;
+%             end
+%             if (isfield(drta_p,'trial_allch_processed')~=0)
+%                 handles.p.trial_allch_processed=drta_p.trial_allch_processed;
+%             end
+%             if (isfield(drta_p,'upper_limit')~=0)
+%                 handles.p.upper_limit=drta_p.upper_limit;
+%                 handles.p.lower_limit=drta_p.lower_limit;
+%             end
+%             if isfield(drta_p,'exc_sn')
+%                 handles.p.exc_sn=drta_p.exc_sn;
+%                 %         handles.p.exc_sn_thr=drta_p.exc_sn_thr;
+%                 %         handles.p.exc_sn_ch=drta_p.exc_sn_ch;
+%             end
+%             
+%         end
         
         handles.p.trialNo=1;
         

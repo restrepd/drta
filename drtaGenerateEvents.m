@@ -591,20 +591,26 @@ for trialNo=1:handles.draq_d.noTrials
             %All the labels without the "E" suffix are assigned the time at
             %odor on
             
+%             figure(1)
+%             plot(shiftdata)
+            
+            start_ii=(handles.draq_p.sec_before_trigger-6)*handles.draq_p.ActualRate+1;
+            end_ii=(handles.draq_p.sec_before_trigger+2)*handles.draq_p.ActualRate;
+            
             if ~isempty(find(shiftdata>=1,1,'first'))
                 
-                if sum(shiftdata>=1)<3*handles.draq_p.ActualRate
+                if sum(shiftdata(start_ii:end_ii)>=1)<3*handles.draq_p.ActualRate
                     %This is a short
                     handles.draq_d.noEvents=handles.draq_d.noEvents+1;
-                    t_start=find(shiftdata>=1,1,'first');
+                    t_start=find(shiftdata(start_ii:end_ii)>=1,1,'first')+start_ii;
                     handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+t_start/handles.draq_p.ActualRate;
                     handles.draq_d.eventType(handles.draq_d.noEvents)=16;
                     handles.draq_d.nEvPerType(16)=handles.draq_d.nEvPerType(16)+1;
                 else
                     %Find trial start time (event 1)
                     %Note: This is the same as FINAL_VALVE
-                    if sum(shiftdata==6)>0.5*handles.draq_p.ActualRate
-                        t_start=find(shiftdata==6,1,'first');
+                    if sum(shiftdata(start_ii:end_ii)==6)>0.5*handles.draq_p.ActualRate
+                        t_start=find(shiftdata(start_ii:end_ii)==6,1,'first')+start_ii;
                         handles.draq_d.noEvents=handles.draq_d.noEvents+1;
                         handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+t_start/handles.draq_p.ActualRate;
                         handles.draq_d.eventType(handles.draq_d.noEvents)=1;
@@ -633,8 +639,8 @@ for trialNo=1:handles.draq_d.noTrials
                     foundEvent=found_Hit||found_Miss||found_CR||found_FA;
                     
                     found_odor_on=0;
-                    if (sum(shiftdata(t_start:end)==18)>2.4*handles.draq_p.ActualRate)&foundEvent...
-                            &~isempty(find((shiftdata(t_start:end)==18)))                    %Very important: each odor On has to have an event
+                    if (sum(shiftdata(t_start:end_ii)==18)>2.4*handles.draq_p.ActualRate)&foundEvent...
+                            &~isempty(find((shiftdata(t_start:end_ii)==18)))                    %Very important: each odor On has to have an event
                      
                         odor_on=t_start+find(shiftdata(t_start:end)==18,1,'first');
                         found_odor_on=1;
@@ -662,7 +668,7 @@ for trialNo=1:handles.draq_d.noTrials
                     %Find Hit (event 3), HitE (event 4), S+ (event 5) and S+E
                     %(event 6)
                     
-                    if sum(shiftdata==8)>0.05*handles.draq_p.ActualRate
+                    if sum(shiftdata(t_start:t_start+6*handles.draq_p.ActualRate)==8)>0.05*handles.draq_p.ActualRate
                         hits=t_start+find(shiftdata(t_start:end)==8,1,'first');
                         
                         if generate_dio_bits==1
@@ -707,7 +713,7 @@ for trialNo=1:handles.draq_d.noTrials
                     %(event 6)
                     
                     
-                    if sum(shiftdata==10)>0.05*handles.draq_p.ActualRate
+                    if sum(shiftdata(t_start:t_start+6*handles.draq_p.ActualRate)==10)>0.05*handles.draq_p.ActualRate
                         miss=t_start+find(shiftdata(t_start:end)==10,1,'first');
                         
                         if generate_dio_bits==1
@@ -751,7 +757,7 @@ for trialNo=1:handles.draq_d.noTrials
                     %Find CR (event 9), CRE (event 10), S- (event 11) and S-E
                     %(event 12)
                     
-                    if sum(shiftdata==12)>0.05*handles.draq_p.ActualRate
+                    if sum(shiftdata(t_start:t_start+6*handles.draq_p.ActualRate)==12)>0.05*handles.draq_p.ActualRate
                         crej=t_start+find(shiftdata(t_start:end)==12,1,'first');
                         
                         if generate_dio_bits==1
@@ -792,7 +798,7 @@ for trialNo=1:handles.draq_d.noTrials
                     %Find FA (event 13), FAE (event 14), S- (event 11) and S-E
                     %(event 12)
                     
-                    if sum(shiftdata==14)>0.05*handles.draq_p.ActualRate
+                    if sum(shiftdata(t_start:t_start+6*handles.draq_p.ActualRate)==14)>0.05*handles.draq_p.ActualRate
                         false_alarm=t_start+find(shiftdata(t_start:end)==14,1,'first');
                         
                         if generate_dio_bits==1
@@ -831,7 +837,7 @@ for trialNo=1:handles.draq_d.noTrials
                     
                     %Find reinforcement (event 15)
                     
-                    if sum(shiftdata==16)>0.02*handles.draq_p.ActualRate
+                    if sum(shiftdata(t_start:t_start+6*handles.draq_p.ActualRate)==16)>0.02*handles.draq_p.ActualRate
                         reinf=t_start+find(shiftdata(t_start:end)==16,1,'first');
                         handles.draq_d.noEvents=handles.draq_d.noEvents+1;
                         handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+reinf/handles.draq_p.ActualRate;

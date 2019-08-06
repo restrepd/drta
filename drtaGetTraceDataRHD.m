@@ -100,7 +100,9 @@ for i=1:handles.draq_d.num_board_dig_in_channels
 end
 
 % Scale voltage levels appropriately.
-amplifier_data = 0.195 * (amplifier_data - 32768); % units = microvolts
+if exist('amplifier_data')~=0
+    amplifier_data = 0.195 * (amplifier_data - 32768); % units = microvolts
+end
 
 if (handles.draq_d.eval_board_mode == 1)
     board_adc_data = 152.59e-6 * (board_adc_data - 32768); % units = volts
@@ -110,14 +112,21 @@ else
     board_adc_data = 50.354e-6 * board_adc_data; % units = volts
 end
 
-szad=size(amplifier_data);
-
-%Setup the output as used by drta
-%data_this_trial=zeros(length(digital_input),22);
-data_this_trial=zeros(szad(2),22);
-
-%Enter the electrode recordings
-data_this_trial(:,1:16)=amplifier_data';
+if exist('amplifier_data')~=0
+    szad=size(amplifier_data);
+    
+    %Setup the output as used by drta
+    %data_this_trial=zeros(length(digital_input),22);
+    data_this_trial=zeros(szad(2),22);
+    
+    %Enter the electrode recordings
+    data_this_trial(:,1:16)=amplifier_data';
+else
+    szadc=size(board_adc_data);
+    %Setup the output as used by drta
+    %data_this_trial=zeros(length(digital_input),22);
+    data_this_trial=zeros(szadc(2),22);
+end
 
 %Enter the four votage inputs: shiff, lick, photodiode and laser trigger
 szadc=size(board_adc_data);

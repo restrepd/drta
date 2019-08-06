@@ -157,6 +157,37 @@ try
     xlim(s_handle(handles.draq_p.no_chans-16),[1 1+handles.p.display_interval*handles.draq_p.ActualRate]);
     ylabel('Digital');
     
+    pffft=1;
+    %This code is here to read the odor onset time measured with the PID in
+    %dropc_conc in the sniff channel
+    
+   
+%     %Find the onset of the odor
+%      try
+%         close 1
+%     catch
+%     end
+%     
+%     hFig1 = figure(1);
+%     set(hFig1, 'units','normalized','position',[.15 .6 .7 .23])
+%     
+%     ii_FV=find(shiftdata_all==1,1,'first');
+%     delta_ii_odor_on=find(shiftdata_all(ii_FV:end)>1,1,'first');
+%     this_trace=shiftdata_all(ii_FV+delta_ii_odor_on-ceil(0.1*handles.draq_p.ActualRate):ii_FV+delta_ii_odor_on+ceil(0.2*handles.draq_p.ActualRate));
+%     plot(([1:length(this_trace)]/handles.draq_p.ActualRate)-0.1,this_trace)
+%     
+%     %Plot the sniff channel
+%      try
+%         close 2
+%     catch
+%     end
+%     
+%     hFig2 = figure(2);
+%     set(hFig2, 'units','normalized','position',[.15 .6 .7 .23])
+%     
+%     this_data=data(:,18);
+%     this_trace=this_data(ii_FV+delta_ii_odor_on-ceil(0.1*handles.draq_p.ActualRate):ii_FV+delta_ii_odor_on+ceil(0.2*handles.draq_p.ActualRate));
+%     plot(([1:length(this_trace)]/handles.draq_p.ActualRate)-0.1,this_trace)
     
 catch
 end

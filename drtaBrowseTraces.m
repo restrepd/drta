@@ -202,7 +202,7 @@ popstr={'1','2', '3','4','5','6','7','8','9','10','11','12','13','14','15','16',
 set(handles.drtaSub16,'String',popstr);
 set(handles.drtaSub16,'Value',handles.p.subtractCh(16));
 
-popstr={'Raw','Raw -mean','High Theta 6-10','Theta 2-12','Beta 15-36','Gamma1 35-65',...
+popstr={'Raw','Wide 4-100','High Theta 6-14','Theta 2-14','Beta 15-36','Gamma1 35-65',...
     'Gamma2 65-95','Gamma 35-95','Spikes 500-5000','Spike var', 'digital'};
 set(handles.drtaRadioFilter,'String',popstr);
 set(handles.drtaRadioFilter,'Value',1);

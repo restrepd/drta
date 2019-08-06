@@ -485,15 +485,21 @@ draq_p.ActualRate=frequency_parameters.board_adc_sample_rate;
 draq_p.srate=frequency_parameters.board_adc_sample_rate;
 switch which_protocol
     case {1,5}
-        draq_p.sec_before_trigger=6;
-        draq_p.sec_per_trigger=9;
+        %dropcspm and dropc_conc
+%         draq_p.sec_before_trigger=6;
+%         draq_p.sec_per_trigger=9;
+        draq_p.sec_before_trigger=handles.pre_dt;
+        draq_p.sec_per_trigger=handles.trial_duration;
     case 2
+        %laser(Ming)
         draq_p.sec_before_trigger=2;
         draq_p.sec_per_trigger=9;
     case 3
+        %dropcnsampler
         draq_p.sec_before_trigger=handles.pre_dt;
         draq_p.sec_per_trigger=handles.trial_duration;
     case 4
+        %laser(Merouann)
         draq_p.sec_before_trigger=10;
         draq_p.sec_per_trigger=21;
 end
@@ -549,8 +555,10 @@ switch which_protocol
                             if (dt_step1>0.9)&(digital_input_no2(ii+delta_ii_first-1+ii_step-1)==18)
                                 %Is there an odor on for >2.4 sec and <4 sec
                                 ii_odor_on=find(digital_input_no2(ii+delta_ii_first-1+ii_step-1:end)<18,1,'first');
-                                if ~(((ii_odor_on/draq_p.ActualRate)<2.4)||((ii_odor_on/draq_p.ActualRate)>4))
-                                    found_bonified=1;
+                                if ~isempty(ii_odor_on)
+                                    if ~(((ii_odor_on/draq_p.ActualRate)<2.4)||((ii_odor_on/draq_p.ActualRate)>4))
+                                        found_bonified=1;
+                                    end
                                 end
                             end
                         end
@@ -908,7 +916,7 @@ end
 
 fprintf(1, 'Sorting trials...\n');
 sorted_trials=sortrows(trials_to_sort);
-
+ 
 if sorted_trials(1,2)<1
     draq_d.t_trial=sorted_trials(sorted_trials(:,2)>1,1)';
     draq_d.start_blockNo=sorted_trials(sorted_trials(:,2)>1,2);

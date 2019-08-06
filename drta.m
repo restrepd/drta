@@ -90,6 +90,9 @@ handles.p.setThr=0;
 handles.p.thrToSet=0;
 handles.p.which_protocol=1;
 
+handles.trial_duration=9;
+handles.pre_dt=6;
+
 % Update handles structure
 guidata(hObject, handles);
 
@@ -406,21 +409,24 @@ function open_rhd_Callback(hObject, eventdata, handles)
 FileName=handles.p.FileName;
 set(handles.drtaWhichFile,'String',FileName);
 
-if exist([handles.p.fullName(1:end-3),'mat'],'file')==2
-    load([handles.p.fullName(1:end-3),'mat']);
-    try
-        handles.draq_p=params;
-        handles.draq_d=data;
-    catch
-        handles.draq_p=draq_p;
-        handles.draq_d=draq_d;
-    end
-else
-    %Setup the matlab header file
-    [handles.draq_p,handles.draq_d]=drta_read_Intan_RHD2000_header(handles.p.fullName,handles.p.which_protocol,handles);
-end
+% if exist([handles.p.fullName(1:end-3),'mat'],'file')==2
+%     load([handles.p.fullName(1:end-3),'mat']);
+%     try
+%         handles.draq_p=params;
+%         handles.draq_d=data;
+%     catch
+%         handles.draq_p=draq_p;
+%         handles.draq_d=draq_d;
+%     end
+% else
+%     %Setup the matlab header file
+%     [handles.draq_p,handles.draq_d]=drta_read_Intan_RHD2000_header(handles.p.fullName,handles.p.which_protocol,handles);
+% end
 
 
+%Setup the matlab header file
+[handles.draq_p,handles.draq_d]=drta_read_Intan_RHD2000_header(handles.p.fullName,handles.p.which_protocol,handles);
+ 
 handles.draq_p.dgordra=3;  
 
 
@@ -554,8 +560,7 @@ handles.p.trialNo=old_trial;
 handles.p.exc_sn_thr=handles.p.lick_th_frac*mean(ninetynine_per-one_per);
 handles.p.lfp.maxLFP=9900;
 handles.p.lfp.minLFP=-9900;
-handles.trial_duration=9;
-handles.pre_dt=6;
+
 
 % Update handles structure
 guidata(hObject, handles);
@@ -602,7 +607,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
+ 
 % --- Executes on button press in openFile.
 function openFile_Callback(hObject, eventdata, handles)
 % hObject    handle to openFile (see GCBO)
