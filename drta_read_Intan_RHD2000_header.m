@@ -331,7 +331,7 @@ if (data_present)
     t_amplifier = zeros(1, num_amplifier_samples);
     
     switch which_protocol
-        case {1,3,5}
+        case {1,3,5,6}
         board_dig_in_raw = zeros(1, num_board_dig_in_samples);
     end
     board_dig_in_data = zeros(num_board_dig_in_channels, num_board_dig_in_samples);
@@ -379,7 +379,7 @@ if (data_present)
         draq_d.offset_start_adc(i)=ftell(fid);
         if (num_board_adc_channels > 0)
             switch which_protocol
-                case {1,3,5}
+                case {1,3,5,6}
                     board_adc_data = fread(fid, [num_samples_per_data_block, num_board_adc_channels], 'uint16')';
                 case {2,4}
                     board_adc_data(:, board_adc_index:(board_adc_index + num_samples_per_data_block - 1)) = fread(fid, [num_samples_per_data_block, num_board_adc_channels], 'uint16')';
@@ -389,7 +389,7 @@ if (data_present)
         draq_d.offset_start_dig(i)=ftell(fid);
         if (num_board_dig_in_channels > 0)
             switch which_protocol
-                case {1,3,5}
+                case {1,3,5,6}
                 board_dig_in_raw(board_dig_in_index:(board_dig_in_index + num_samples_per_data_block - 1)) = fread(fid, num_samples_per_data_block, 'uint16');
                 case {2,4}
                 board_dig_in_raw = fread(fid, num_samples_per_data_block, 'uint16');
@@ -430,15 +430,18 @@ if (data_present)
     fprintf(1, 'Parsing data...\n');
     
     switch which_protocol
-        case {1,3,5}
+        case {1,3,5,6}
             % Extract digital input channels to separate variables.
             for i=1:num_board_dig_in_channels
                 mask = 2^(board_dig_in_channels(i).native_order) * ones(size(board_dig_in_raw));
                 board_dig_in_data(i, :) = (bitand(board_dig_in_raw, mask) > 0);
             end
-            for i=1:num_board_dig_out_channels
-                mask = 2^(board_dig_out_channels(i).native_order) * ones(size(board_dig_out_raw));
-                board_dig_out_data(i, :) = (bitand(board_dig_out_raw, mask) > 0);
+            try
+                for i=1:num_board_dig_out_channels
+                    mask = 2^(board_dig_out_channels(i).native_order) * ones(size(board_dig_out_raw));
+                    board_dig_out_data(i, :) = (bitand(board_dig_out_raw, mask) > 0);
+                end
+            catch
             end
     end
 
@@ -484,7 +487,7 @@ draq_p.show_plot=0;
 draq_p.ActualRate=frequency_parameters.board_adc_sample_rate;
 draq_p.srate=frequency_parameters.board_adc_sample_rate;
 switch which_protocol
-    case {1,5}
+    case {1,5,6}
         %dropcspm and dropc_conc
 %         draq_p.sec_before_trigger=6;
 %         draq_p.sec_per_trigger=9;
@@ -534,8 +537,9 @@ trials_to_sort=[];
 full_trial_start=[];
 full_trial_end=[];
 
+
 switch which_protocol
-    case {1,5}
+    case {1,5,6}
         %Find the full trials (excluding short trials)
         while at_end==0
             
@@ -582,6 +586,28 @@ switch which_protocol
                             end
                         end
                     end
+                    
+                case 6
+                    %dropcspm_hf
+                     %The trial starts with an output of 6
+                    delta_ii_first=find(digital_input_no2(ii:end)==6,1,'first');
+                    if ~isempty(delta_ii_first)
+                        %The final valve on step has to last at least 0.5 sec
+                        ii_step=find(digital_input_no2(ii+delta_ii_first-1:end)>6,1,'first');
+                        if ~isempty(ii_step)
+                            dt_step1=ii_step/draq_p.ActualRate;
+                            
+                            if (dt_step1>0.5)&(digital_input_no2(ii+delta_ii_first-1+ii_step-1)==18)
+                                %Is there an odor on for >2.4 sec and <5.5 sec
+                                ii_odor_on=find(digital_input_no2(ii+delta_ii_first-1+ii_step-1:end)<18,1,'first');
+                                if ~isempty(ii_odor_on)
+                                    if ~(((ii_odor_on/draq_p.ActualRate)<2.4)||((ii_odor_on/draq_p.ActualRate)>5.5))
+                                        found_bonified=1;
+                                    end
+                                end
+                            end
+                        end
+                    end
             end
             
             
@@ -595,7 +621,7 @@ switch which_protocol
                 delta_ii_last=find(digital_input(ii:end)<1,1,'first');
                 if ~isempty(delta_ii_last)
                     ii=ii+delta_ii_last;
-                    if (delta_ii_last/draq_p.ActualRate)>3.2
+                    if (delta_ii_last/draq_p.ActualRate)>4.2
                         if found_bonified==1
                             %Full trial
                             draq_d.noTrials=draq_d.noTrials+1;

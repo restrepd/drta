@@ -11,8 +11,8 @@ handles.choicesFileName=choicesFileName;
 handles.choicesPathName=choicesPathName;
 
 handles.drtachoices=handles_choices.drtachoices;
-
-
+ 
+ 
 % Choose default command line output for drta
 %load('C:\Awake Data\drta_preferences.mat');
 prefs=drtaSetPreferences();
@@ -42,6 +42,8 @@ handles.p.setThr=0;
 handles.p.thrToSet=0;
 handles.p.which_protocol=handles_choices.drtachoices.which_protocol;
 
+handles.pre_dt=handles.drtachoices.pre_dt;
+handles.trial_duration=handles.drtachoices.trial_duration;
 
 %For the moment this only works with rhd files
 for filNum=handles_choices.drtachoices.first_file:handles_choices.drtachoices.no_files

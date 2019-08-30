@@ -120,7 +120,12 @@ if exist('amplifier_data')~=0
     data_this_trial=zeros(szad(2),22);
     
     %Enter the electrode recordings
-    data_this_trial(:,1:16)=amplifier_data';
+    %Note: for some reason Connor has the 32 channels on....
+    if size(amplifier_data,1)==16
+        data_this_trial(:,1:16)=amplifier_data';
+    else
+        data_this_trial(:,1:16)=amplifier_data(9:24,:)';
+    end
 else
     szadc=size(board_adc_data);
     %Setup the output as used by drta
