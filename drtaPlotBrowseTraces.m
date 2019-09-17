@@ -47,11 +47,11 @@ try
     %     shift_dropc_nsampler(1:handles.draq_p.ActualRate*handles.p.exclude_secs)=0;
     
     odor_on=[];
-    switch handles.p.which_c_program
-        case 2
+    switch handles.p.which_protocol
+        case {1,6}
             %dropcspm
             odor_on=find(shiftdata30==18,1,'first');
-        case 10
+        case 5
             %dropcspm conc
             t_start=find(shift_dropc_nsampler==1,1,'first');
             if (sum((shift_dropc_nsampler>=2)&(shift_dropc_nsampler<=7))>2.4*handles.draq_p.ActualRate)&...
@@ -61,6 +61,13 @@ try
             end
     end
     
+%     try
+%         close(1)
+%     catch
+%     end
+%     hFig=figure(1);
+%     set(hFig, 'units','normalized','position',[.2 .4 .7 .25])
+%     plot(shiftdata30)
     
     %Hit
     if sum(shiftdata30==8)>0.05*handles.draq_p.ActualRate

@@ -144,7 +144,7 @@ switch handles.p.which_c_program
         pffft=1
         
     case {2,13}
-        %dropcspm
+        %dropcspm, dropcspm_hf
         handles.draq_d.nEvPerType=zeros(1,17);
         handles.draq_d.nEventTypes=17;
         handles.draq_d.eventlabels=cell(1,17);
@@ -1995,9 +1995,10 @@ for trialNo=1:handles.draq_d.noTrials
                     foundEvent=found_Hit||found_Miss||found_CR||found_FA||found_Short;
                     
                     found_odor_on=0;
-                    if (sum(shiftdata(t_start:end_ii)==18)>2.4*handles.draq_p.ActualRate)&foundEvent...
-                            &~isempty(find((shiftdata(t_start:end_ii)==18)))                    %Very important: each odor On has to have an event
-                     
+%                     if (sum(shiftdata(t_start:end_ii)==18)>2.4*handles.draq_p.ActualRate)&foundEvent...
+%                             &~isempty(find((shiftdata(t_start:end_ii)==18)))                    %Very important: each odor On has to have an event
+%                      
+                    if (sum(shiftdata(t_start:end_ii)==18)>3*handles.draq_p.ActualRate) %Note that I have relaxed this for _hf
                         odor_on=t_start+find(shiftdata(t_start:end)==18,1,'first');
                         found_odor_on=1;
                         handles.draq_d.noEvents=handles.draq_d.noEvents+1;
