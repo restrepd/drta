@@ -567,7 +567,7 @@ switch which_protocol
                             end
                         end
                     end
-                    
+                     
                 case 5
                     %The trial starts with an output of 1
                     delta_ii_first=find(digital_input(ii:end)==1,1,'first');
@@ -580,8 +580,10 @@ switch which_protocol
                             if (dt_step1>0.9)&(digital_input(ii+delta_ii_first-1+ii_step-1)>=2)&(digital_input(ii+delta_ii_first-1+ii_step-1)<=7)
                                 %Is there an odor on for >2.4 sec and <4 sec
                                 ii_odor_on=find(digital_input(ii+delta_ii_first-1+ii_step-1:end)~=digital_input(ii+delta_ii_first-1+ii_step-1),1,'first');
-                                if ~(((ii_odor_on/draq_p.ActualRate)<2.4)||((ii_odor_on/draq_p.ActualRate)>4))
-                                    found_bonified=1;
+                                if ~isempty(ii_odor_on)
+                                    if ~(((ii_odor_on/draq_p.ActualRate)<2.4)||((ii_odor_on/draq_p.ActualRate)>4))
+                                        found_bonified=1;
+                                    end
                                 end
                             end
                         end
@@ -612,11 +614,10 @@ switch which_protocol
             
             
             
-            if ~isempty(delta_ii_first)
+            if found_bonified==1
                 %Found a bonified digital signal
                 %Find the interval
-                
-                
+
                 ii=ii+delta_ii_first;
                 delta_ii_last=find(digital_input(ii:end)<1,1,'first');
                 if ~isempty(delta_ii_last)
@@ -644,6 +645,20 @@ switch which_protocol
                     at_end=1;
                 end
             else
+                if isempty(delta_ii_first)
+                    at_end=1;
+                else
+                    ii=ii+delta_ii_first;
+                    delta_ii_last=find(digital_input(ii:end)<1,1,'first');
+                    if ~isempty(delta_ii_last)
+                        ii=ii+delta_ii_last;
+                    else
+                        at_end=1;
+                    end
+                end
+            end
+            
+            if isempty(delta_ii_first)
                 at_end=1;
             end
         end
