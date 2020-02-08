@@ -331,7 +331,7 @@ if (data_present)
     t_amplifier = zeros(1, num_amplifier_samples);
     
     switch which_protocol
-        case {1,3,5,6}
+        case {1,3,5,6,7}
         board_dig_in_raw = zeros(1, num_board_dig_in_samples);
     end
     board_dig_in_data = zeros(num_board_dig_in_channels, num_board_dig_in_samples);
@@ -379,7 +379,7 @@ if (data_present)
         draq_d.offset_start_adc(i)=ftell(fid);
         if (num_board_adc_channels > 0)
             switch which_protocol
-                case {1,3,5,6}
+                case {1,3,5,6,7}
                     board_adc_data = fread(fid, [num_samples_per_data_block, num_board_adc_channels], 'uint16')';
                 case {2,4}
                     board_adc_data(:, board_adc_index:(board_adc_index + num_samples_per_data_block - 1)) = fread(fid, [num_samples_per_data_block, num_board_adc_channels], 'uint16')';
@@ -389,7 +389,7 @@ if (data_present)
         draq_d.offset_start_dig(i)=ftell(fid);
         if (num_board_dig_in_channels > 0)
             switch which_protocol
-                case {1,3,5,6}
+                case {1,3,5,6,7}
                 board_dig_in_raw(board_dig_in_index:(board_dig_in_index + num_samples_per_data_block - 1)) = fread(fid, num_samples_per_data_block, 'uint16');
                 case {2,4}
                 board_dig_in_raw = fread(fid, num_samples_per_data_block, 'uint16');
@@ -430,7 +430,7 @@ if (data_present)
     fprintf(1, 'Parsing data...\n');
     
     switch which_protocol
-        case {1,3,5,6}
+        case {1,3,5,6,7}
             % Extract digital input channels to separate variables.
             for i=1:num_board_dig_in_channels
                 mask = 2^(board_dig_in_channels(i).native_order) * ones(size(board_dig_in_raw));
@@ -487,7 +487,7 @@ draq_p.show_plot=0;
 draq_p.ActualRate=frequency_parameters.board_adc_sample_rate;
 draq_p.srate=frequency_parameters.board_adc_sample_rate;
 switch which_protocol
-    case {1,5,6}
+    case {1,5,6,7}
         %dropcspm and dropc_conc
 %         draq_p.sec_before_trigger=6;
 %         draq_p.sec_per_trigger=9;
@@ -537,7 +537,7 @@ trials_to_sort=[];
 full_trial_start=[];
 full_trial_end=[];
 
-
+  
 switch which_protocol
     case {1,5,6}
         %Find the full trials (excluding short trials)
@@ -588,9 +588,9 @@ switch which_protocol
                             end
                         end
                     end
-                    
+                     
                 case 6
-                    %dropcspm_hf
+                    %dropcspm_hf 
                      %The trial starts with an output of 6
                     delta_ii_first=find(digital_input_no2(ii:end)==6,1,'first');
                     if ~isempty(delta_ii_first)
@@ -603,7 +603,7 @@ switch which_protocol
                                 %Is there an odor on for >2.4 sec and <5.5 sec
                                 ii_odor_on=find(digital_input_no2(ii+delta_ii_first-1+ii_step-1:end)<18,1,'first');
                                 if ~isempty(ii_odor_on)
-                                    if ~(((ii_odor_on/draq_p.ActualRate)<2.4)||((ii_odor_on/draq_p.ActualRate)>5.5))
+                                    if (((ii_odor_on/draq_p.ActualRate)>1)||((ii_odor_on/draq_p.ActualRate)<5.5))
                                         found_bonified=1;
                                     end
                                 end
@@ -613,7 +613,7 @@ switch which_protocol
             end
             
             
-            
+             
             if found_bonified==1
                 %Found a bonified digital signal
                 %Find the interval
@@ -622,7 +622,7 @@ switch which_protocol
                 delta_ii_last=find(digital_input(ii:end)<1,1,'first');
                 if ~isempty(delta_ii_last)
                     ii=ii+delta_ii_last;
-                    if (delta_ii_last/draq_p.ActualRate)>4.2
+                    if (delta_ii_last/draq_p.ActualRate)>1
                         if found_bonified==1
                             %Full trial
                             draq_d.noTrials=draq_d.noTrials+1;
@@ -952,6 +952,44 @@ switch which_protocol
         end
         
         fprintf(1, 'Found %d inter trials ...\n',draq_d.noTrials-full_trials);
+    
+    case 7
+        %continuous read
+        %Find the full trials (excluding short trials)
+        ii=1;
+        while at_end==0
+           
+            
+            %Is is too close to the end?
+            if (ii+((draq_p.sec_per_trigger-draq_p.sec_before_trigger)*draq_p.ActualRate)+0.1)<length(digital_input)
+                %Full trial
+                draq_d.noTrials=draq_d.noTrials+1;
+               
+                %Shift ii as if a digital trial had been detected
+                ii=ii+draq_p.ActualRate*(draq_p.sec_before_trigger+0.5);
+                
+                %Trial start time goes in column 1
+                trials_to_sort(draq_d.noTrials,1)=(ii/draq_p.ActualRate)-(draq_p.sec_before_trigger+0.5);
+                %Block no at start of trial goes in column 2
+                trials_to_sort(draq_d.noTrials,2)=ceil((trials_to_sort(draq_d.noTrials,1)*draq_p.ActualRate)/num_samples_per_data_block);
+                %Block no at end of trial goes in column 3
+                trials_to_sort(draq_d.noTrials,3)=trials_to_sort(draq_d.noTrials,2)+ceil((draq_p.sec_per_trigger*draq_p.ActualRate)/num_samples_per_data_block);
+                
+                full_trial_start(draq_d.noTrials)=ii-draq_p.ActualRate*(draq_p.sec_before_trigger+0.5);
+                full_trial_end(draq_d.noTrials)=full_trial_start(draq_d.noTrials)+draq_p.sec_per_trigger*draq_p.ActualRate;
+                
+                 %Shift ii to the end of the trial plus 0.1 sec
+                ii=ii+draq_p.ActualRate*(draq_p.sec_per_trigger-draq_p.sec_before_trigger+0.1);
+            else
+                at_end=1;
+            end
+            
+            
+        end
+        
+        full_trials=draq_d.noTrials;
+        
+        fprintf(1, 'Found %d full trials...\n',full_trials);
 end
 %Sort the trials and assign them to draq_d
 
