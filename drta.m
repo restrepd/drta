@@ -615,6 +615,7 @@ function openFile_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 [FileName,PathName] = uigetfile({'*.rhd';'*.dg'},'Select rhd or dg file to open');
+% [FileName,PathName] = uigetfile('*.dg','Select rhd or dg file to open');
 handles.p.fullName=[PathName,FileName];
 handles.p.FileName=FileName;
 handles.p.PathName=PathName;

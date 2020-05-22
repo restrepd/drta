@@ -158,6 +158,20 @@ try
     ylabel('Digital');
     
     pffft=1;
+    
+    %This code is here to plot the digital data in a separate figure
+       
+%      try
+%         close 1
+%     catch
+%     end
+%     
+%     hFig1 = figure(1);
+%     set(hFig1, 'units','normalized','position',[.15 .6 .7 .23])
+%     
+%     plot(shiftdata_all(ii_from:ii_to));
+
+    
     %This code is here to read the odor onset time measured with the PID in
     %dropc_conc in the sniff channel
     

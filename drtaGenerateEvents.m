@@ -348,6 +348,27 @@ switch handles.p.which_c_program
         handles.draq_d.eventlabels{1}='Laser';
         handles.draq_d.eventlabels{2}='All';
         handles.draq_d.eventlabels{3}='Inter';
+        
+    case {14}
+        %Working memory
+        handles.draq_d.nEvPerType=zeros(1,15);
+        handles.draq_d.nEventTypes=15;
+        handles.draq_d.eventlabels=cell(1,15);
+        handles.draq_d.eventlabels{1}='TStart';
+        handles.draq_d.eventlabels{2}='OdorOn';
+        handles.draq_d.eventlabels{3}='NM_Hit';
+        handles.draq_d.eventlabels{4}='AB';
+        handles.draq_d.eventlabels{5}='NonMatch';
+        handles.draq_d.eventlabels{6}='BA';
+        handles.draq_d.eventlabels{7}='NM_Miss';
+        handles.draq_d.eventlabels{8}='Blank';
+        handles.draq_d.eventlabels{9}='M_CR';
+        handles.draq_d.eventlabels{10}='AA';
+        handles.draq_d.eventlabels{11}='Match';
+        handles.draq_d.eventlabels{12}='BB';
+        handles.draq_d.eventlabels{13}='M_FA';
+        handles.draq_d.eventlabels{14}='Blank';
+        handles.draq_d.eventlabels{15}='Reinf';
 end
 
 
@@ -371,7 +392,21 @@ if generate_dio_bits==1
 end
 
 %Now get the events
-reset_ii=0;
+% reset_ii=0;
+
+all_licks=[];
+for trialNo=1:handles.draq_d.noTrials
+    handles.p.trialNo=trialNo;
+    data=drtaGetTraceData(handles);
+    if trialNo==1
+        all_licks=data(:,19)';
+    else
+        all_licks=[all_licks data(:,19)'];
+    end
+end
+lick_max=prctile(all_licks,99.9);
+lick_min=prctile(all_licks,0.01);
+lick_thr=lick_min+0.5*(lick_max-lick_min);
 
 for trialNo=1:handles.draq_d.noTrials
     if ~isfield(handles,'drtachoices')
@@ -408,6 +443,9 @@ for trialNo=1:handles.draq_d.noTrials
     shiftdata(1:int64(handles.draq_p.ActualRate*handles.p.exclude_secs))=0;
     shift_dropc_nsampler(1:int64(handles.draq_p.ActualRate*handles.p.exclude_secs))=0;
     
+    licks=[];
+    licks=data(:,19);
+    
     %Exclude the trials that are off
     switch handles.p.which_c_program
         
@@ -442,22 +480,22 @@ for trialNo=1:handles.draq_d.noTrials
             
             
         case {2,13}
-%             %dropcspm
-%             timeBefore=str2double(get(handles.timeBeforeFV,'String'));
-%             firstFV=find(shiftdata30==6,1,'first')/handles.draq_p.ActualRate;
-%             
-%             if firstFV<timeBefore
-%                 handles.p.trial_ch_processed(1:16,trialNo)=zeros(16,1);
-%                 handles.p.trial_allch_processed(trialNo)=0;
-%             end
-%             
-%             this_odor_on=find(shiftdata==18,1,'first');
-%             pointsleft=216000-(this_odor_on+3*handles.draq_p.ActualRate);
-%             
-%             if(pointsleft<1)
-%                 handles.p.trial_ch_processed(1:16,trialNo)=zeros(16,1);
-%                 handles.p.trial_allch_processed(trialNo)=0;
-%             end
+            %             %dropcspm
+            %             timeBefore=str2double(get(handles.timeBeforeFV,'String'));
+            %             firstFV=find(shiftdata30==6,1,'first')/handles.draq_p.ActualRate;
+            %
+            %             if firstFV<timeBefore
+            %                 handles.p.trial_ch_processed(1:16,trialNo)=zeros(16,1);
+            %                 handles.p.trial_allch_processed(trialNo)=0;
+            %             end
+            %
+            %             this_odor_on=find(shiftdata==18,1,'first');
+            %             pointsleft=216000-(this_odor_on+3*handles.draq_p.ActualRate);
+            %
+            %             if(pointsleft<1)
+            %                 handles.p.trial_ch_processed(1:16,trialNo)=zeros(16,1);
+            %                 handles.p.trial_allch_processed(trialNo)=0;
+            %             end
             
         case (3)
             %background
@@ -502,23 +540,23 @@ for trialNo=1:handles.draq_d.noTrials
             %dropcspm_conc
             %I fixed the problems in drta_read_Intan_RHD2000_header, this should be OK
             
-%             timeBefore=str2double(get(handles.timeBeforeFV,'String'));
-%             firstFV=find(shift_dropc_nsampler==1,1,'first')/handles.draq_p.ActualRate;
-%             
-%             if firstFV<timeBefore
-%                 handles.p.trial_ch_processed(1:16,trialNo)=zeros(16,1);
-%                 handles.p.trial_allch_processed(trialNo)=0;
-%             end
-%             
-%             this_odor_on=find(shift_dropc_nsampler>1,1,'first');
-%             pointsleft=216000-(this_odor_on+3*handles.draq_p.ActualRate);
-%             
-%             if(pointsleft<1)
-%                 handles.p.trial_ch_processed(1:16,trialNo)=zeros(16,1);
-%                 handles.p.trial_allch_processed(trialNo)=0;
-%                 trialNo
-%                 pointsleft
-%             end
+            %             timeBefore=str2double(get(handles.timeBeforeFV,'String'));
+            %             firstFV=find(shift_dropc_nsampler==1,1,'first')/handles.draq_p.ActualRate;
+            %
+            %             if firstFV<timeBefore
+            %                 handles.p.trial_ch_processed(1:16,trialNo)=zeros(16,1);
+            %                 handles.p.trial_allch_processed(trialNo)=0;
+            %             end
+            %
+            %             this_odor_on=find(shift_dropc_nsampler>1,1,'first');
+            %             pointsleft=216000-(this_odor_on+3*handles.draq_p.ActualRate);
+            %
+            %             if(pointsleft<1)
+            %                 handles.p.trial_ch_processed(1:16,trialNo)=zeros(16,1);
+            %                 handles.p.trial_allch_processed(trialNo)=0;
+            %                 trialNo
+            %                 pointsleft
+            %             end
         case (11)
             %Ming laser
         case (12)
@@ -591,8 +629,8 @@ for trialNo=1:handles.draq_d.noTrials
             %All the labels without the "E" suffix are assigned the time at
             %odor on
             
-%             figure(1)
-%             plot(shiftdata)
+            %             figure(1)
+            %             plot(shiftdata)
             
             start_ii=(handles.draq_p.sec_before_trigger-6)*handles.draq_p.ActualRate+1;
             end_ii=(handles.draq_p.sec_before_trigger+2)*handles.draq_p.ActualRate;
@@ -641,7 +679,7 @@ for trialNo=1:handles.draq_d.noTrials
                     found_odor_on=0;
                     if (sum(shiftdata(t_start:end_ii)==18)>2.4*handles.draq_p.ActualRate)&foundEvent...
                             &~isempty(find((shiftdata(t_start:end_ii)==18)))                    %Very important: each odor On has to have an event
-                     
+                        
                         odor_on=t_start+find(shiftdata(t_start:end)==18,1,'first');
                         found_odor_on=1;
                         handles.draq_d.noEvents=handles.draq_d.noEvents+1;
@@ -659,12 +697,12 @@ for trialNo=1:handles.draq_d.noTrials
                         %Then add it to the list
                         handles.draq_d.noEvents=handles.draq_d.noEvents+1;
                         handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+2;
-%                         handles.draq_d.eventType(handles.draq_d.noEvents)=2;
+                        %                         handles.draq_d.eventType(handles.draq_d.noEvents)=2;
                         handles.draq_d.eventType(handles.draq_d.noEvents)=17;   %Add it as an inter
                         handles.draq_d.nEvPerType(2)=handles.draq_d.nEvPerType(2)+1;
                     end
                     
-                   
+                    
                     %Find Hit (event 3), HitE (event 4), S+ (event 5) and S+E
                     %(event 6)
                     
@@ -697,7 +735,7 @@ for trialNo=1:handles.draq_d.noTrials
                             handles.draq_d.noEvents=handles.draq_d.noEvents+1;
                             handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
                             handles.draq_d.eventType(handles.draq_d.noEvents)=5;
-                            handles.draq_d.nEvPerType(5)=handles.draq_d.nEvPerType(5)+1; 
+                            handles.draq_d.nEvPerType(5)=handles.draq_d.nEvPerType(5)+1;
                             
                         end
                         
@@ -860,7 +898,7 @@ for trialNo=1:handles.draq_d.noTrials
                     handles.draq_d.block_per_trial(trialNo)=floor((trialNo-1)/20)+1;
                     
                     
-                 
+                    
                 end
             else
                 handles.draq_d.noEvents=handles.draq_d.noEvents+1;
@@ -1941,13 +1979,13 @@ for trialNo=1:handles.draq_d.noTrials
             handles.draq_d.eventType(handles.draq_d.noEvents)=2;
             handles.draq_d.nEvPerType(2)=handles.draq_d.nEvPerType(2)+1;
             
-            case (13)
+        case (13)
             %dropcspm_hf
             %All the labels without the "E" suffix are assigned the time at
             %odor on
             
-%             figure(1)
-%             plot(shiftdata)
+            %             figure(1)
+            %             plot(shiftdata)
             
             start_ii=(handles.draq_p.sec_before_trigger-7)*handles.draq_p.ActualRate+1;
             end_ii=(handles.draq_p.sec_before_trigger+3)*handles.draq_p.ActualRate;
@@ -1995,9 +2033,9 @@ for trialNo=1:handles.draq_d.noTrials
                     foundEvent=found_Hit||found_Miss||found_CR||found_FA||found_Short;
                     
                     found_odor_on=0;
-%                     if (sum(shiftdata(t_start:end_ii)==18)>2.4*handles.draq_p.ActualRate)&foundEvent...
-%                             &~isempty(find((shiftdata(t_start:end_ii)==18)))                    %Very important: each odor On has to have an event
-%                      
+                    %                     if (sum(shiftdata(t_start:end_ii)==18)>2.4*handles.draq_p.ActualRate)&foundEvent...
+                    %                             &~isempty(find((shiftdata(t_start:end_ii)==18)))                    %Very important: each odor On has to have an event
+                    %
                     if (sum(shiftdata(t_start:end_ii)==18)>2*handles.draq_p.ActualRate) %Note that I have relaxed this for _hf
                         odor_on=t_start+find(shiftdata(t_start:end)==18,1,'first');
                         found_odor_on=1;
@@ -2016,12 +2054,12 @@ for trialNo=1:handles.draq_d.noTrials
                         %Then add it to the list
                         handles.draq_d.noEvents=handles.draq_d.noEvents+1;
                         handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+2;
-%                         handles.draq_d.eventType(handles.draq_d.noEvents)=2;
+                        %                         handles.draq_d.eventType(handles.draq_d.noEvents)=2;
                         handles.draq_d.eventType(handles.draq_d.noEvents)=17;   %Add it as an inter
                         handles.draq_d.nEvPerType(2)=handles.draq_d.nEvPerType(2)+1;
                     end
                     
-                   
+                    
                     %Find Hit (event 3), HitE (event 4), S+ (event 5) and S+E
                     %(event 6)
                     
@@ -2054,7 +2092,7 @@ for trialNo=1:handles.draq_d.noTrials
                             handles.draq_d.noEvents=handles.draq_d.noEvents+1;
                             handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
                             handles.draq_d.eventType(handles.draq_d.noEvents)=5;
-                            handles.draq_d.nEvPerType(5)=handles.draq_d.nEvPerType(5)+1; 
+                            handles.draq_d.nEvPerType(5)=handles.draq_d.nEvPerType(5)+1;
                             
                         end
                         
@@ -2210,7 +2248,7 @@ for trialNo=1:handles.draq_d.noTrials
                             handles.draq_d.nEvPerType(13)=handles.draq_d.nEvPerType(16)+1;
                         end
                         
-                       
+                        
                     end
                     
                     %Find reinforcement (event 15)
@@ -2238,13 +2276,145 @@ for trialNo=1:handles.draq_d.noTrials
                     handles.draq_d.block_per_trial(trialNo)=floor((trialNo-1)/20)+1;
                     
                     
-                 
+                    
                 end
             else
                 handles.draq_d.noEvents=handles.draq_d.noEvents+1;
                 handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+(length(shiftdata)/3)/handles.draq_p.ActualRate;
                 handles.draq_d.eventType(handles.draq_d.noEvents)=17;
                 handles.draq_d.nEvPerType(17)=handles.draq_d.nEvPerType(17)+1;
+            end
+            
+        case (14)
+            %Working memory
+            
+            
+            %             figure(1)
+            %             plot(shift_dropc_nsampler)
+            
+            start_ii=1;
+            end_ii=handles.draq_p.sec_per_trigger*handles.draq_p.ActualRate;
+            
+            if ~isempty(find(shift_dropc_nsampler>=1,1,'first'))
+                
+                
+                %Find trial start time (event 1)
+                %Note: This is FINAL_VALVE
+                
+                t_start=find(shift_dropc_nsampler(start_ii:end_ii)==1,1,'first')+start_ii;
+                handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+t_start/handles.draq_p.ActualRate;
+                handles.draq_d.eventType(handles.draq_d.noEvents)=1;
+                handles.draq_d.nEvPerType(1)=handles.draq_d.nEvPerType(1)+1;
+                
+                
+                %Find the first odor
+                ii_first2=find(shift_dropc_nsampler(start_ii:end_ii)==2,1,'first');
+                ii_first4=find(shift_dropc_nsampler(start_ii:end_ii)==4,1,'first');
+                ii_reinf=find(shift_dropc_nsampler(start_ii:end_ii)==16,1,'first');
+                
+                if (~isempty(ii_first2))&(~isempty(ii_first4))
+                    %Non match
+                    ii_odor_on=min([ii_first2 ii_first4]);
+                    
+                    %OdorOn
+                    handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                    handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+ii_odor_on/handles.draq_p.ActualRate;
+                    handles.draq_d.eventType(handles.draq_d.noEvents)=2;
+                    handles.draq_d.nEvPerType(2)=handles.draq_d.nEvPerType(2)+1;
+                    
+                    %NonMatch
+                    handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                    handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+ii_odor_on/handles.draq_p.ActualRate;
+                    handles.draq_d.eventType(handles.draq_d.noEvents)=5;
+                    handles.draq_d.nEvPerType(5)=handles.draq_d.nEvPerType(5)+1;
+                    
+                    
+                    if ~isempty(find(shift_dropc_nsampler(start_ii:end_ii)==16,1,'first'))
+                        %NonMatchHit
+                        handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                        handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+ii_odor_on/handles.draq_p.ActualRate;
+                        handles.draq_d.eventType(handles.draq_d.noEvents)=3;
+                        handles.draq_d.nEvPerType(3)=handles.draq_d.nEvPerType(3)+1;
+                    else
+                        %NonMatchMissss
+                        handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                        handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+ii_odor_on/handles.draq_p.ActualRate;
+                        handles.draq_d.eventType(handles.draq_d.noEvents)=7;
+                        handles.draq_d.nEvPerType(7)=handles.draq_d.nEvPerType(7)+1;
+                    end
+                    
+                    if ii_first2<ii_first4
+                        %AB
+                        handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                        handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+ii_odor_on/handles.draq_p.ActualRate;
+                        handles.draq_d.eventType(handles.draq_d.noEvents)=4;
+                        handles.draq_d.nEvPerType(4)=handles.draq_d.nEvPerType(4)+1;
+                    else
+                        %BA
+                        handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                        handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+ii_odor_on/handles.draq_p.ActualRate;
+                        handles.draq_d.eventType(handles.draq_d.noEvents)=6;
+                        handles.draq_d.nEvPerType(6)=handles.draq_d.nEvPerType(6)+1;
+                    end
+                else
+                    if (~isempty(ii_first2))
+                        ii_odor_on=ii_first2;
+                    else
+                        ii_odor_on=ii_first4;
+                    end
+                    
+                    %OdorOn
+                    handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                    handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+ii_odor_on/handles.draq_p.ActualRate;
+                    handles.draq_d.eventType(handles.draq_d.noEvents)=2;
+                    handles.draq_d.nEvPerType(2)=handles.draq_d.nEvPerType(2)+1;
+                    
+                    %Match
+                    handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                    handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+ii_odor_on/handles.draq_p.ActualRate;
+                    handles.draq_d.eventType(handles.draq_d.noEvents)=11;
+                    handles.draq_d.nEvPerType(11)=handles.draq_d.nEvPerType(11)+1;
+                    
+                    %Did the animal lick
+                    ii_last=find(shift_dropc_nsampler(start_ii:end_ii)>=1,1,'last');
+                    
+                    if sum(licks(start_ii+ii_last:start_ii+ii_last+0.12*handles.draq_p.ActualRate)>lick_thr)>0
+                        licked=1;
+                    else
+                        licked=0;
+                    end
+                    
+                    if licked==1
+                        %MatchFA
+                        handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                        handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+ii_odor_on/handles.draq_p.ActualRate;
+                        handles.draq_d.eventType(handles.draq_d.noEvents)=13;
+                        handles.draq_d.nEvPerType(13)=handles.draq_d.nEvPerType(13)+1;
+                    else
+                        %MatchCR
+                        handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                        handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+ii_odor_on/handles.draq_p.ActualRate;
+                        handles.draq_d.eventType(handles.draq_d.noEvents)=9;
+                        handles.draq_d.nEvPerType(9)=handles.draq_d.nEvPerType(9)+1;
+                    end
+                    
+                    if ~isempty(ii_first2)
+                        %AA
+                        handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                        handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+ii_odor_on/handles.draq_p.ActualRate;
+                        handles.draq_d.eventType(handles.draq_d.noEvents)=10;
+                        handles.draq_d.nEvPerType(10)=handles.draq_d.nEvPerType(10)+1;
+                    else
+                        %BB
+                        handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+                        handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+ii_odor_on/handles.draq_p.ActualRate;
+                        handles.draq_d.eventType(handles.draq_d.noEvents)=12;
+                        handles.draq_d.nEvPerType(12)=handles.draq_d.nEvPerType(12)+1;
+                    end
+                    
+                end
+                
             end
             
             
@@ -2341,6 +2511,28 @@ switch handles.p.which_c_program
         %Merouann laser
         handles.draq_d.blocks(1,1)=min(handles.draq_d.events)-0.00001;
         handles.draq_d.blocks(1,2)=max(handles.draq_d.events)+0.00001;
+    case (14)
+        %dropcspm
+        indxOdorOn=find(strcmp('OdorOn',handles.draq_d.eventlabels));
+        evenTypeIndxOdorOn=find(handles.draq_d.eventType==indxOdorOn);
+        
+        szev=size(evenTypeIndxOdorOn);
+        numBlocks=ceil(szev(2)/20);
+        if numBlocks==0
+            numBlocks=1;
+        end
+        handles.draq_d.blocks=zeros(numBlocks,2);
+        handles.draq_d.blocks(1,1)=min(handles.draq_d.events)-0.001;
+        handles.draq_d.blocks(numBlocks,2)=max(handles.draq_d.events)+0.001;
+        
+        for blockNo=2:numBlocks
+            handles.draq_d.blocks(blockNo,1)=((handles.draq_d.events(evenTypeIndxOdorOn((blockNo-1)*20))...
+                +handles.draq_d.events(evenTypeIndxOdorOn((blockNo-1)*20+1)))/2)-0.001;
+        end
+        for blockNo=1:numBlocks-1
+            handles.draq_d.blocks(blockNo,2)=((handles.draq_d.events(evenTypeIndxOdorOn(blockNo*20))...
+                +handles.draq_d.events(evenTypeIndxOdorOn(blockNo*20+1)))/2)+0.001;
+        end
 end
 
 try
@@ -2407,6 +2599,9 @@ else
         case (12)
             %dropcspm_conc
             msgbox('Saved .mat (Merouann laser)');
+        case (14)
+            %dropcspm_conc
+            msgbox('Saved .mat (Working Memory)');
     end
 end
 
