@@ -202,7 +202,8 @@ try
 %     this_data=data(:,18);
 %     this_trace=this_data(ii_FV+delta_ii_odor_on-ceil(0.1*handles.draq_p.ActualRate):ii_FV+delta_ii_odor_on+ceil(0.2*handles.draq_p.ActualRate));
 %     plot(([1:length(this_trace)]/handles.draq_p.ActualRate)-0.1,this_trace)
-    
+%     
+%If you rrun drta_save_sniffs you save decimated sniff traces
 catch
 end
 
