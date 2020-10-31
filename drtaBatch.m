@@ -42,8 +42,8 @@ handles.p.setThr=0;
 handles.p.thrToSet=0;
 handles.p.which_protocol=handles_choices.drtachoices.which_protocol;
 
-handles.pre_dt=handles.drtachoices.pre_dt;
-handles.trial_duration=handles.drtachoices.trial_duration;
+% handles.pre_dt=handles.drtachoices.pre_dt;
+% handles.trial_duration=handles.drtachoices.trial_duration;
 
 %For the moment this only works with rhd files
 for filNum=handles_choices.drtachoices.first_file:handles_choices.drtachoices.no_files
@@ -180,8 +180,8 @@ for filNum=handles_choices.drtachoices.first_file:handles_choices.drtachoices.no
         handles.p.exc_sn_thr=handles.p.lick_th_frac*mean(ninetynine_per-one_per);
         handles.p.lfp.maxLFP=9900;
         handles.p.lfp.minLFP=-9900;
-        handles.trial_duration=9;
-        handles.pre_dt=6;
+%         handles.trial_duration=9;
+%         handles.pre_dt=6;
     else
         %This is a dg file
         FileName=handles.p.FileName;

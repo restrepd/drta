@@ -104,12 +104,14 @@ if exist('amplifier_data')~=0
     amplifier_data = 0.195 * (amplifier_data - 32768); % units = microvolts
 end
 
-if (handles.draq_d.eval_board_mode == 1)
-    board_adc_data = 152.59e-6 * (board_adc_data - 32768); % units = volts
-elseif (handles.draq_d.eval_board_mode == 13) % Intan Recording Controller
-    board_adc_data = 312.5e-6 * (board_adc_data - 32768); % units = volts
-else
-    board_adc_data = 50.354e-6 * board_adc_data; % units = volts
+if exist('board_adc_data')~=0
+    if (handles.draq_d.eval_board_mode == 1)
+        board_adc_data = 152.59e-6 * (board_adc_data - 32768); % units = volts
+    elseif (handles.draq_d.eval_board_mode == 13) % Intan Recording Controller
+        board_adc_data = 312.5e-6 * (board_adc_data - 32768); % units = volts
+    else
+        board_adc_data = 50.354e-6 * board_adc_data; % units = volts
+    end
 end
 
 if exist('amplifier_data')~=0
@@ -134,18 +136,30 @@ else
 end
 
 %Enter the four votage inputs: shiff, lick, photodiode and laser trigger
-szadc=size(board_adc_data);
-data_this_trial(:,18:18+szadc(1)-1)=board_adc_data(1:szadc(1),:)';
-
+if exist('board_adc_data')~=0
+    szadc=size(board_adc_data);
+    data_this_trial(:,18:18+szadc(1)-1)=board_adc_data(1:szadc(1),:)';
+end
+ 
 if handles.draq_d.num_board_dig_in_channels>0
     %Enter the digital input channel
-    digital_input=board_dig_in_data(1,:)+2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
-        +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:)...
-        +64*board_dig_in_data(7,:);
+%     digital_input=board_dig_in_data(1,:)+2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
+%         +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:)...
+%         +64*board_dig_in_data(7,:);
+    
+    for ii=1:handles.draq_d.num_board_dig_in_channels
+        if ii==1
+            digital_input=board_dig_in_data(1,:);
+        else
+            digital_input=digital_input+(2^(ii-1))*board_dig_in_data(ii,:);
+        end
+    end
     
     
     %Enter the trigger (bit 8)
-    data_this_trial(:,17)=1000*board_dig_in_data(8,:);
+    if handles.draq_d.num_board_dig_in_channels>=8
+        data_this_trial(:,17)=1000*board_dig_in_data(8,:);
+    end
     
     data_this_trial(:,22)=digital_input;
 end

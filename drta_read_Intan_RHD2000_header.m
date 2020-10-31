@@ -525,11 +525,25 @@ draq_d.eval_board_mode=eval_board_mode;
 draq_d.board_dig_in_channels=board_dig_in_channels;
  
 if ~isempty(board_dig_in_data)
-    digital_input=board_dig_in_data(1,:)+2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
-        +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:)...
-        +64*board_dig_in_data(7,:);
-    digital_input_no2=2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
+%     digital_input=board_dig_in_data(1,:)+2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
+%         +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:)...
+%         +64*board_dig_in_data(7,:);
+%     digital_input_no2=2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
+%         +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:);
+%     
+    
+    for ii=1:num_board_dig_in_channels
+        if ii==1
+            digital_input=board_dig_in_data(1,:); 
+        else
+            digital_input=digital_input+(2^(ii-1))*board_dig_in_data(ii,:);
+        end
+    end
+    
+    if num_board_dig_in_channels>=2
+            digital_input_no2=2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
         +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:);
+    end
 else
     digital_input=[];
 end
@@ -1013,11 +1027,15 @@ switch which_protocol
         %continuous read
         %Find the full trials (excluding short trials)
         ii=1;
+        if ~isempty(digital_input)
+            total_length=length(digital_input);
+        else
+            total_length=board_adc_index;
+        end
         while at_end==0
-           
-            
+               
             %Is is too close to the end?
-            if (ii+((draq_p.sec_per_trigger-draq_p.sec_before_trigger)*draq_p.ActualRate)+0.1)<length(digital_input)
+            if (ii+((draq_p.sec_per_trigger-draq_p.sec_before_trigger)*draq_p.ActualRate)+0.1)<total_length
                 %Full trial
                 draq_d.noTrials=draq_d.noTrials+1;
                

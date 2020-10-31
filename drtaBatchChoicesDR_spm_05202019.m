@@ -24,6 +24,9 @@ handles.drtachoices.which_c_program=14;
 %First file to process
 handles.drtachoices.first_file = 1;
 
+handles.drtachoices.pre_dt;
+handles.trial_duration=handles.drtachoices.trial_duration;
+
 
 
 % no laser experiment ethyl ace

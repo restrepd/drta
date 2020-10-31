@@ -369,6 +369,15 @@ switch handles.p.which_c_program
         handles.draq_d.eventlabels{13}='M_FA';
         handles.draq_d.eventlabels{14}='Blank';
         handles.draq_d.eventlabels{15}='Reinf';
+        
+    case(15)
+        %Continuous
+        handles.draq_d.nEventTypes=2;
+        handles.draq_d.nEvPerType=zeros(1,2);
+        handles.draq_d.eventlabels=[];
+        handles.draq_d.eventlabels{1}='Event1';
+        handles.draq_d.eventlabels{2}='Event1';
+        
 end
 
 
@@ -2417,6 +2426,22 @@ for trialNo=1:handles.draq_d.noTrials
                 
             end
             
+        case (15)
+            %Continuous
+            
+            
+            %Event1
+            t_start=3*handles.draq_p.ActualRate;
+            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+t_start/handles.draq_p.ActualRate;
+            handles.draq_d.eventType(handles.draq_d.noEvents)=1;
+            handles.draq_d.nEvPerType(1)=handles.draq_d.nEvPerType(1)+1;
+            
+            %Event2
+            handles.draq_d.noEvents=handles.draq_d.noEvents+1;
+            handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+t_start/handles.draq_p.ActualRate;
+            handles.draq_d.eventType(handles.draq_d.noEvents)=2;
+            handles.draq_d.nEvPerType(2)=handles.draq_d.nEvPerType(2)+1;
             
     end %switch
     if ~isfield(handles,'drtachoices')
@@ -2533,6 +2558,10 @@ switch handles.p.which_c_program
             handles.draq_d.blocks(blockNo,2)=((handles.draq_d.events(evenTypeIndxOdorOn(blockNo*20))...
                 +handles.draq_d.events(evenTypeIndxOdorOn(blockNo*20+1)))/2)+0.001;
         end
+    case (15)
+        %Continuous
+        handles.draq_d.blocks(1,1)=min(handles.draq_d.events)-0.00001;
+        handles.draq_d.blocks(1,2)=max(handles.draq_d.events)+0.00001;
 end
 
 try
@@ -2602,6 +2631,9 @@ else
         case (14)
             %dropcspm_conc
             msgbox('Saved .mat (Working Memory)');
+        case (15)
+            %dropcspm_conc
+            msgbox('Saved .mat (Continuous)');
     end
 end
 
