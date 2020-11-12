@@ -541,8 +541,15 @@ if ~isempty(board_dig_in_data)
     end
     
     if num_board_dig_in_channels>=2
-            digital_input_no2=2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
-        +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:);
+        for ii=2:num_board_dig_in_channels
+            if ii==2
+                digital_input_no2=2*board_dig_in_data(2,:);
+            else
+                digital_input=digital_input+(2^(ii-1))*board_dig_in_data(ii,:);
+            end
+        end
+%         digital_input_no2=2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
+%             +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:);
     end
 else
     digital_input=[];
