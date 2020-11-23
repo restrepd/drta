@@ -2431,7 +2431,7 @@ for trialNo=1:handles.draq_d.noTrials
             
             
             %Event1
-            t_start=3*handles.draq_p.ActualRate;
+            t_start=(3+0.2)*handles.draq_p.ActualRate;  %Note: 0.2 is a time pad used for filtering
             handles.draq_d.noEvents=handles.draq_d.noEvents+1;
             handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+t_start/handles.draq_p.ActualRate;
             handles.draq_d.eventType(handles.draq_d.noEvents)=1;

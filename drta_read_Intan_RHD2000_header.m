@@ -1042,25 +1042,52 @@ switch which_protocol
         while at_end==0
                
             %Is is too close to the end?
-            if (ii+((draq_p.sec_per_trigger-draq_p.sec_before_trigger)*draq_p.ActualRate)+0.1)<total_length
+%             if (ii+((draq_p.sec_per_trigger-draq_p.sec_before_trigger)*draq_p.ActualRate)+0.1)<total_length
+                if (ii+(draq_p.sec_per_trigger*draq_p.ActualRate)+0.1)<total_length
+                
+                %Note: For filtering I add a 0.2 sec time_pad to avoid filter artifacts.
+                %Make sure to use the same time_pad that is used for filtering in drgMaster
+                time_pad=0.2;
+                
                 %Full trial
                 draq_d.noTrials=draq_d.noTrials+1;
                
                 %Shift ii as if a digital trial had been detected
-                ii=ii+draq_p.ActualRate*(draq_p.sec_before_trigger+0.5);
+%                 ii=ii+draq_p.ActualRate*(draq_p.sec_before_trigger+0.5);
                 
                 %Trial start time goes in column 1
-                trials_to_sort(draq_d.noTrials,1)=(ii/draq_p.ActualRate)-(draq_p.sec_before_trigger+0.5);
+                trials_to_sort(draq_d.noTrials,1)=(ii/draq_p.ActualRate);
                 %Block no at start of trial goes in column 2
                 trials_to_sort(draq_d.noTrials,2)=ceil((trials_to_sort(draq_d.noTrials,1)*draq_p.ActualRate)/num_samples_per_data_block);
                 %Block no at end of trial goes in column 3
-                trials_to_sort(draq_d.noTrials,3)=trials_to_sort(draq_d.noTrials,2)+ceil((draq_p.sec_per_trigger*draq_p.ActualRate)/num_samples_per_data_block);
+                trials_to_sort(draq_d.noTrials,3)=trials_to_sort(draq_d.noTrials,2)+ceil(((draq_p.sec_per_trigger+2*time_pad)*draq_p.ActualRate)/num_samples_per_data_block);
                 
-                full_trial_start(draq_d.noTrials)=ii-draq_p.ActualRate*(draq_p.sec_before_trigger+0.5);
-                full_trial_end(draq_d.noTrials)=full_trial_start(draq_d.noTrials)+draq_p.sec_per_trigger*draq_p.ActualRate;
+                full_trial_start(draq_d.noTrials)=ii;
+                full_trial_end(draq_d.noTrials)=full_trial_start(draq_d.noTrials)+(draq_p.sec_per_trigger+2*time_pad)*draq_p.ActualRate;
                 
-                 %Shift ii to the end of the trial plus 0.1 sec
-                ii=ii+draq_p.ActualRate*(draq_p.sec_per_trigger-draq_p.sec_before_trigger+0.1);
+                 %Shift ii to the end of the trial minus time_pad
+                ii=ii+draq_p.ActualRate*(draq_p.sec_per_trigger);
+                
+                %Old code
+%                 %Full trial
+%                 draq_d.noTrials=draq_d.noTrials+1;
+%                
+%                 %Shift ii as if a digital trial had been detected
+%                 ii=ii+draq_p.ActualRate*(draq_p.sec_before_trigger+0.5);
+%                 
+%                 %Trial start time goes in column 1
+%                 trials_to_sort(draq_d.noTrials,1)=(ii/draq_p.ActualRate)-(draq_p.sec_before_trigger+0.5);
+%                 %Block no at start of trial goes in column 2
+%                 trials_to_sort(draq_d.noTrials,2)=ceil((trials_to_sort(draq_d.noTrials,1)*draq_p.ActualRate)/num_samples_per_data_block);
+%                 %Block no at end of trial goes in column 3
+%                 trials_to_sort(draq_d.noTrials,3)=trials_to_sort(draq_d.noTrials,2)+ceil((draq_p.sec_per_trigger*draq_p.ActualRate)/num_samples_per_data_block);
+%                 
+%                 full_trial_start(draq_d.noTrials)=ii-draq_p.ActualRate*(draq_p.sec_before_trigger+0.5);
+%                 full_trial_end(draq_d.noTrials)=full_trial_start(draq_d.noTrials)+draq_p.sec_per_trigger*draq_p.ActualRate;
+%                 
+%                  %Shift ii to the end of the trial plus 0.1 sec
+%                 ii=ii+draq_p.ActualRate*(draq_p.sec_per_trigger-draq_p.sec_before_trigger+0.1);
+                
             else
                 at_end=1;
             end
@@ -1073,6 +1100,12 @@ switch which_protocol
         fprintf(1, 'Found %d full trials...\n',full_trials);
 end
 %Sort the trials and assign them to draq_d
+
+if ~isempty(digital_input)
+    total_length=length(digital_input);
+else
+    total_length=board_adc_index;
+end
 
 fprintf(1, 'Sorting trials...\n');
 sorted_trials=sortrows(trials_to_sort);
@@ -1089,6 +1122,7 @@ else
 end
 
 draq_d.t_end=draq_d.t_trial(end)+draq_p.sec_per_trigger;
+draq_d.total_length=total_length;
 fprintf(1, 'Done reading rhd header...\n');
 
 return
