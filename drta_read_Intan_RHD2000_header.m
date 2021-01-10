@@ -68,6 +68,9 @@ desired_dsp_cutoff_frequency = fread(fid, 1, 'single');
 desired_lower_bandwidth = fread(fid, 1, 'single');
 desired_upper_bandwidth = fread(fid, 1, 'single');
 
+fprintf(1, 'Sample rate = %d\nLower bandwidth = %d\nUpper_bandwidth = %d\n', ...
+    sample_rate, actual_lower_bandwidth,actual_upper_bandwidth);
+
 % This tells us if a software 50/60 Hz notch filter was enabled during
 % the data acquisition.
 notch_filter_mode = fread(fid, 1, 'int16');
@@ -523,33 +526,39 @@ draq_d.num_board_adc_channels=num_board_adc_channels;
 draq_d.num_board_dig_in_channels=num_board_dig_in_channels;
 draq_d.eval_board_mode=eval_board_mode;
 draq_d.board_dig_in_channels=board_dig_in_channels;
- 
+
+
+
 if ~isempty(board_dig_in_data)
-%     digital_input=board_dig_in_data(1,:)+2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
-%         +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:)...
-%         +64*board_dig_in_data(7,:);
-%     digital_input_no2=2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
-%         +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:);
-%     
     
-    for ii=1:num_board_dig_in_channels
-        if ii==1
-            digital_input=board_dig_in_data(1,:); 
-        else
-            digital_input=digital_input+(2^(ii-1))*board_dig_in_data(ii,:);
-        end
-    end
-    
-    if num_board_dig_in_channels>=2
-        for ii=2:num_board_dig_in_channels
-            if ii==2
-                digital_input_no2=2*board_dig_in_data(2,:);
-            else
-                digital_input=digital_input+(2^(ii-1))*board_dig_in_data(ii,:);
+    switch which_protocol
+        case {1}
+            digital_input=board_dig_in_data(1,:)+2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
+                +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:)...
+                +64*board_dig_in_data(7,:);
+            digital_input_no2=2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
+                +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:);
+            
+        otherwise
+            for ii=1:num_board_dig_in_channels
+                if ii==1
+                    digital_input=board_dig_in_data(1,:);
+                else
+                    digital_input=digital_input+(2^(ii-1))*board_dig_in_data(ii,:);
+                end
             end
-        end
-%         digital_input_no2=2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
-%             +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:);
+            
+            if num_board_dig_in_channels>=2
+                for ii=2:num_board_dig_in_channels
+                    if ii==2
+                        digital_input_no2=2*board_dig_in_data(2,:);
+                    else
+                        digital_input=digital_input+(2^(ii-1))*board_dig_in_data(ii,:);
+                    end
+                end
+                %         digital_input_no2=2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
+                %             +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:);
+            end
     end
 else
     digital_input=[];
@@ -1060,13 +1069,14 @@ switch which_protocol
                 %Block no at start of trial goes in column 2
                 trials_to_sort(draq_d.noTrials,2)=ceil((trials_to_sort(draq_d.noTrials,1)*draq_p.ActualRate)/num_samples_per_data_block);
                 %Block no at end of trial goes in column 3
-                trials_to_sort(draq_d.noTrials,3)=trials_to_sort(draq_d.noTrials,2)+ceil(((draq_p.sec_per_trigger+2*time_pad)*draq_p.ActualRate)/num_samples_per_data_block);
+                trials_to_sort(draq_d.noTrials,3)=trials_to_sort(draq_d.noTrials,2)+ceil(((draq_p.sec_per_trigger)*draq_p.ActualRate)/num_samples_per_data_block)-1;
                 
                 full_trial_start(draq_d.noTrials)=ii;
                 full_trial_end(draq_d.noTrials)=full_trial_start(draq_d.noTrials)+(draq_p.sec_per_trigger+2*time_pad)*draq_p.ActualRate;
                 
                  %Shift ii to the end of the trial minus time_pad
                 ii=ii+draq_p.ActualRate*(draq_p.sec_per_trigger);
+                pffft=1;
                 
                 %Old code
 %                 %Full trial

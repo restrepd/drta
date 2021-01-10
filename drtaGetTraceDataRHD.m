@@ -61,7 +61,7 @@ for i=handles.draq_d.start_blockNo(handles.p.trialNo):handles.draq_d.end_blockNo
     % In version 1.2, we moved from saving timestamps as unsigned
     % integeters to signed integers to accomidate negative (adjusted)
     % timestamps for pretrigger data.
-    
+     
     %Read amplifier channels
     if (num_amplifier_channels > 0)
         fseek(fid,handles.draq_d.offset_start_ch(i),'bof');
