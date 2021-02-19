@@ -493,7 +493,7 @@ switch which_protocol
     case {1,5,6,7}
         %dropcspm and dropc_conc
 %         draq_p.sec_before_trigger=6;
-%         draq_p.sec_per_trigger=9;
+%         draq_p.sec_per_trigger=9;  
         draq_p.sec_before_trigger=handles.pre_dt;
         draq_p.sec_per_trigger=handles.trial_duration;
     case 2
@@ -570,7 +570,7 @@ ii=1;
 trials_to_sort=[];
 full_trial_start=[];
 full_trial_end=[];
-
+ 
   
 switch which_protocol
     case {1,5,6,8}
