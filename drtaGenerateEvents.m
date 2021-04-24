@@ -424,7 +424,7 @@ for trialNo=1:handles.draq_d.noTrials
     tic
     
     handles.p.trialNo=trialNo;
-    data=drtaGetTraceData(handles);
+    [data]=drtaGetTraceData(handles);
     
     
     %For digging out data
@@ -610,7 +610,7 @@ for trialNo=1:handles.draq_d.noTrials
                     
                 else
                     %This is an odor
-                    
+                     
                     %Final valve
                     first_FV_ii=find(shift_dropc_nsampler==4,1,'first');
                     handles.draq_d.noEvents=handles.draq_d.noEvents+1;

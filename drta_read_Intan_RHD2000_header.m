@@ -527,15 +527,17 @@ draq_d.num_board_dig_in_channels=num_board_dig_in_channels;
 draq_d.eval_board_mode=eval_board_mode;
 draq_d.board_dig_in_channels=board_dig_in_channels;
 
-
+ 
 
 if ~isempty(board_dig_in_data)
     
     switch which_protocol
-        case {1}
+        case {1,3,6}
             digital_input=board_dig_in_data(1,:)+2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
                 +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:)...
                 +64*board_dig_in_data(7,:);
+            digital_input_ns=board_dig_in_data(1,:)+2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
+                +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:);
             digital_input_no2=2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
                 +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:);
             
@@ -571,7 +573,7 @@ trials_to_sort=[];
 full_trial_start=[];
 full_trial_end=[];
  
-  
+    
 switch which_protocol
     case {1,5,6,8}
         %Find the full trials (excluding short trials)
@@ -845,7 +847,7 @@ switch which_protocol
 %         end
 %         
 %         fprintf(1, 'Found %d inter trials ...\n',draq_d.noTrials-full_trials);
-        
+         
     case 2
         draq_d.max_laser=max(board_adc_data(4,:));
         draq_d.min_laser=min(board_adc_data(4,:));
@@ -919,24 +921,24 @@ switch which_protocol
         end
         
         fprintf(1, 'Found %d inter trials ...\n',draq_d.noTrials-full_trials);
-        
+         
     case 3
         %dropcnsampler
         %Find the full trials (excluding short trials)
         while at_end==0
-            delta_ii_first=find(digital_input(ii:end)==16,1,'first');
+            delta_ii_first=find(digital_input_ns(ii:end)==16,1,'first');
             %Found the end of an odor on?
             if ~isempty(delta_ii_first)
                 %Find the end of odor on
                 ii=ii+delta_ii_first;
-                delta_ii_last=find(digital_input(ii:end)~=16,1,'first');
+                delta_ii_last=find(digital_input_ns(ii:end)~=16,1,'first');
                 %Was it found?
                 if ~isempty(delta_ii_last)
                     ii=ii+delta_ii_last;
                     %Is it too close to the beggining?
                     if (ii-(draq_p.sec_before_trigger*draq_p.ActualRate))>0
                         %Is is too close to the end?
-                        if (ii+((draq_p.sec_per_trigger-draq_p.sec_before_trigger)*draq_p.ActualRate))<length(digital_input)
+                        if (ii+((draq_p.sec_per_trigger-draq_p.sec_before_trigger)*draq_p.ActualRate))<length(digital_input_ns)
                             %Full trial
                             draq_d.noTrials=draq_d.noTrials+1;
                             %Trial start time goes in column 1
@@ -948,7 +950,7 @@ switch which_protocol
                             full_trial_start(draq_d.noTrials)=ii-draq_p.ActualRate*(draq_p.sec_before_trigger+1);
                             full_trial_end(draq_d.noTrials)=full_trial_start(draq_d.noTrials)+draq_p.sec_per_trigger*draq_p.ActualRate;
 %                             figure(1)
-%                             plot(digital_input(full_trial_start(draq_d.noTrials):full_trial_end(draq_d.noTrials)))
+%                             plot(digital_input_ns(full_trial_start(draq_d.noTrials):full_trial_end(draq_d.noTrials)))
                         else
                             at_end=1;
                         end
@@ -1119,7 +1121,7 @@ end
 
 fprintf(1, 'Sorting trials...\n');
 sorted_trials=sortrows(trials_to_sort);
- 
+  
 if sorted_trials(1,2)<1
     draq_d.t_trial=sorted_trials(sorted_trials(:,2)>1,1)';
     draq_d.start_blockNo=sorted_trials(sorted_trials(:,2)>1,2);

@@ -1,5 +1,5 @@
 % --- Executes on button press in drtaBrowseDraPush.
-function data_per_trial=drtaGetTraceData(handles)
+function [data_per_trial]=drtaGetTraceData(handles)
 % hObject    handle to drtaBrowseDraPush (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
@@ -50,5 +50,5 @@ switch handles.draq_p.dgordra
             fclose(handles.p.fid);
         end
     case 3
-        data_per_trial=drtaGetTraceDataRHD(handles);
+        [data_per_trial]=drtaGetTraceDataRHD(handles);
 end

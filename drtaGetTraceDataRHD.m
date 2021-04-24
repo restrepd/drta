@@ -1,4 +1,4 @@
-function data_this_trial=drtaGetTraceDataRHD(handles)
+function [data_this_trial]=drtaGetTraceDataRHD(handles)
 
 % read_Intan_RHD2000_file
 %
@@ -162,6 +162,9 @@ if handles.draq_d.num_board_dig_in_channels>0
     end
     
     data_this_trial(:,22)=digital_input;
+    
+
+        
 end
 
 return
