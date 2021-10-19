@@ -139,6 +139,9 @@ end
 if exist('board_adc_data')~=0
     szadc=size(board_adc_data);
     data_this_trial(:,18:18+szadc(1)-1)=board_adc_data(1:szadc(1),:)';
+    if szadc(1)==5
+       data_this_trial(:,21)=board_adc_data(5,:)'; 
+    end
 end
  
 if handles.draq_d.num_board_dig_in_channels>0

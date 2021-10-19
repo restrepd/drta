@@ -207,6 +207,29 @@ try
 catch
 end
 
+% figure(1)
+% hold on
+% 
+% %Plot the filtered output
+% filtLFP_data=[];
+% %this_data=data_this_trial(floor((ii-1)*handles.draq_p.ActualRate*handles.draq_p.sec_per_trigger):floor(ii*handles.draq_p.ActualRate*handles.draq_p.sec_per_trigger));
+% filtLFP_data=data(:,21);
+% 
+% plot(filtLFP_data(ii_from:ii_to),'-b');
+% 
+% max_filtLFP_data=max(filtLFP_data(ii_from:ii_to));
+% 
+% %Plot the laserTTL
+% laserTTL_data=[];
+% %this_data=data_this_trial(floor((ii-1)*handles.draq_p.ActualRate*handles.draq_p.sec_per_trigger):floor(ii*handles.draq_p.ActualRate*handles.draq_p.sec_per_trigger));
+% laserTTL_data=data(:,18);
+% 
+% max_laserTTL_data=max(laserTTL_data);
+% 
+% plot((max_filtLFP_data/max_laserTTL_data)*laserTTL_data(ii_from:ii_to),'-r');
+
+
+pffft=1;
 
 
 

@@ -1,4 +1,4 @@
-function drta_read_Intan_RHD2000_file_save_text
+function handles_out = drta_read_Intan_RHD2000_file_save_text
 
 % read_Intan_RHD2000_file
 %

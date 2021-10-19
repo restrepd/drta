@@ -61,8 +61,8 @@ end
 sample_rate = fread(fid, 1, 'single');
 dsp_enabled = fread(fid, 1, 'int16');
 actual_dsp_cutoff_frequency = fread(fid, 1, 'single');
-actual_lower_bandwidth = fread(fid, 1, 'single');
-actual_upper_bandwidth = fread(fid, 1, 'single');
+actual_lower_bandwidth = fread(fid, 1, 'single')
+actual_upper_bandwidth = fread(fid, 1, 'single')
 
 desired_dsp_cutoff_frequency = fread(fid, 1, 'single');
 desired_lower_bandwidth = fread(fid, 1, 'single');
