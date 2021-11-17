@@ -2322,6 +2322,16 @@ for trialNo=1:handles.draq_d.noTrials
                 ii_first4=find(shift_dropc_nsampler(start_ii:end_ii)==4,1,'first');
                 ii_reinf=find(shift_dropc_nsampler(start_ii:end_ii)==16,1,'first');
                 
+                %Find the odor on off times
+                ii_odor1=find(shift_dropc_nsampler(start_ii:end_ii)>1,1,'first');
+                delta_ii_odor1=find(shift_dropc_nsampler(start_ii+ii_odor1:end_ii)==0,1,'first');
+                delta_ii_odor12=find(shift_dropc_nsampler(start_ii+ii_odor1+delta_ii_odor1:end_ii)>0,1,'first');
+                delta_ii_odor2=find(shift_dropc_nsampler(start_ii+ii_odor1+delta_ii_odor1+delta_ii_odor12:end_ii)==0,1,'first');
+
+                handles.draq_d.delta_ii_odor1(trialNo)=delta_ii_odor1;
+                handles.draq_d.delta_ii_odor12(trialNo)=delta_ii_odor12;
+                handles.draq_d.delta_ii_odor2(trialNo)=delta_ii_odor2;
+
                 if (~isempty(ii_first2))&(~isempty(ii_first4))
                     %Non match
                     ii_odor_on=min([ii_first2 ii_first4]);
@@ -2346,7 +2356,7 @@ for trialNo=1:handles.draq_d.noTrials
                         handles.draq_d.eventType(handles.draq_d.noEvents)=3;
                         handles.draq_d.nEvPerType(3)=handles.draq_d.nEvPerType(3)+1;
                     else
-                        %NonMatchMissss
+                        %NonMatchMiss
                         handles.draq_d.noEvents=handles.draq_d.noEvents+1;
                         handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+ii_odor_on/handles.draq_p.ActualRate;
                         handles.draq_d.eventType(handles.draq_d.noEvents)=7;
@@ -2386,9 +2396,19 @@ for trialNo=1:handles.draq_d.noTrials
                     handles.draq_d.nEvPerType(11)=handles.draq_d.nEvPerType(11)+1;
                     
                     %Did the animal lick
-                    ii_last=find(shift_dropc_nsampler(start_ii:end_ii)>=1,1,'last');
-                    
-                    if sum(licks(start_ii+ii_last:start_ii+ii_last+0.12*handles.draq_p.ActualRate)>lick_thr)>0
+                    %Note: Here I assume the user entered 4 RAs with 0.5
+                    %sec each
+                    these_licks=zeros(1,4);
+                    delta_RA=0.5*handles.draq_p.ActualRate;
+                    this_ii=start_ii+ii_odor1+delta_ii_odor1+delta_ii_odor12+delta_ii_odor2-1;
+                    for ii_RA=1:4
+                        if sum(licks(this_ii:this_ii+delta_RA)>lick_thr)>0
+                            these_licks(ii_RA)=1;
+                        end
+                        this_ii=this_ii+delta_RA;
+                    end
+
+                    if sum(these_licks)==4
                         licked=1;
                     else
                         licked=0;
@@ -2558,6 +2578,11 @@ switch handles.p.which_c_program
             handles.draq_d.blocks(blockNo,2)=((handles.draq_d.events(evenTypeIndxOdorOn(blockNo*20))...
                 +handles.draq_d.events(evenTypeIndxOdorOn(blockNo*20+1)))/2)+0.001;
         end
+
+
+        fprintf(1, ['Delta odor 1 = %d sec \n'], mean(handles.draq_d.delta_ii_odor1)/handles.draq_p.ActualRate);
+        fprintf(1, ['Delta odor 12 = %d sec \n'], mean(handles.draq_d.delta_ii_odor12)/handles.draq_p.ActualRate);
+        fprintf(1, ['Delta odor 2 = %d sec \n'], mean(handles.draq_d.delta_ii_odor2)/handles.draq_p.ActualRate);
     case (15)
         %Continuous
         handles.draq_d.blocks(1,1)=min(handles.draq_d.events)-0.00001;
@@ -2725,7 +2750,6 @@ else
 end
 
 handles.p.trialNo=oldTrialNo;
-
 
 
 

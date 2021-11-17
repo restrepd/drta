@@ -511,7 +511,7 @@ switch which_protocol
     case 8
         %working memory
         draq_p.sec_before_trigger=2;
-        draq_p.sec_per_trigger=11.5;
+        draq_p.sec_per_trigger=13.5;
 end
 
 draq_p.pre_gain=0;

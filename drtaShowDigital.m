@@ -126,6 +126,8 @@ this_data=[];
 this_data=data(:,22);
  
 try
+%     shiftdata_all=this_data;
+%     one_twenty_eight_here=sum(this_data==128)
     shiftdata_all=bitand(this_data,1+2+4+8+16);
     hold off
     plot(shiftdata_all(ii_from:ii_to));
