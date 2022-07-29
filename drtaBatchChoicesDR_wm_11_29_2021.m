@@ -30,8 +30,7 @@ handles.trial_duration=handles.drtachoices.trial_duration;
 
 
 % no laser experiment ethyl ace
-handles.drtachoices.PathName{1}='/home/restrepd/Documents/Daniel/working/WT/5sec/1311/1/cd 1311
-';
+handles.drtachoices.PathName{1}='/home/restrepd/Documents/Daniel/working/WT/5sec/1311/1/';
 handles.drtachoices.FileName{1}='73117254071ethylacepropylacenl.dg';
 
 
