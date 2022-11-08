@@ -325,19 +325,19 @@ if (data_present)
     amplifier_data = zeros(num_amplifier_channels, num_samples_per_data_block);
     aux_input_data = zeros(num_aux_input_channels, num_samples_per_data_block);
     supply_voltage_data = zeros(num_supply_voltage_channels, 1);
-    temp_sensor_data = zeros(num_temp_sensor_channels, 1);
+    temp_sensor_data = zeros(num_temp_sensor_channels, 1); 
     board_adc_data = zeros(num_board_adc_channels, num_samples_per_data_block);
-    board_dig_out_data = zeros(num_board_dig_out_channels, num_board_dig_out_samples);
+    board_dig_out_data = zeros(num_board_dig_out_channels, int64(num_board_dig_out_samples));
     board_dig_out_raw = zeros(1, num_samples_per_data_block);
     
     %We do read in all the t_amplifier and dig data to allow determining the time gaps and the trials
-    t_amplifier = zeros(1, num_amplifier_samples);
-    
+    t_amplifier = zeros(1, int64(num_amplifier_samples));
+     
     switch which_protocol
         case {1,3,5,6,7,8}
-        board_dig_in_raw = zeros(1, num_board_dig_in_samples);
+        board_dig_in_raw = zeros(1, int64(num_board_dig_in_samples));
     end
-    board_dig_in_data = zeros(num_board_dig_in_channels, num_board_dig_in_samples);
+    board_dig_in_data = zeros(num_board_dig_in_channels, int64(num_board_dig_in_samples));
 
     % Read sampled data from file.
 %     fprintf(1, 'Reading data from file...\n');
