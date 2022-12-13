@@ -51,4 +51,6 @@ switch handles.draq_p.dgordra
         end
     case 3
         [data_per_trial]=drtaGetTraceDataRHD(handles);
+    case 4
+        [data_per_trial]=drtaGetTraceDataEDF(handles);
 end

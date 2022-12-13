@@ -2649,7 +2649,7 @@ for trialNo=1:handles.draq_d.noTrials
                             end
                             
                            %S+L (event 6)
-                            if (found_odor_on==1)&(laser_on==0)
+                            if (found_odor_on==1)&(laser_on==1)
                                 handles.draq_d.noEvents=handles.draq_d.noEvents+1;
                                 handles.draq_d.events(handles.draq_d.noEvents)=handles.draq_d.t_trial(trialNo)+odor_on/handles.draq_p.ActualRate;
                                 handles.draq_d.eventType(handles.draq_d.noEvents)=6;
@@ -3109,7 +3109,7 @@ draq_d=handles.draq_d;
 if isfield(draq_d,'data')
     draq_d=rmfield(draq_d,'data');
 end
-
+ 
 if exist('units_per_tet','var')
     if handles.p.which_c_program==8
         save(jt_times_file, 'cluster_class_per_file', 'par', 'offset_for_chan','noSpikes', 'all_timestamp_per_file','drta_p', 'draq_p', 'draq_d','units_per_tet');

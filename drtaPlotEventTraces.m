@@ -1,4 +1,4 @@
-function drtaPlotBrowseTraces(handles)
+function drtaPlotEventTraces(handles)
 
 % draqPlotSpikePreview(handles)
 %

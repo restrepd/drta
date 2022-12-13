@@ -140,10 +140,17 @@ if (handles.p.whichPlot~=11)
                     case {9,10} %Spikes 500-5000
                         fpass=[500 5000];
                 end
+
+%                 20th order filter
                 bpFilt = designfilt('bandpassiir','FilterOrder',20, ...
                     'HalfPowerFrequency1',fpass(1),'HalfPowerFrequency2',fpass(2), ...
                     'SampleRate',floor(handles.draq_p.ActualRate));
                 data1=filtfilt(bpFilt,data);
+
+                %From wave_clus amp_detect
+%                 sr=floor(handles.draq_p.ActualRate);
+%                 [b,a]=ellip(2,0.1,40,[fpass(1) fpass(2)]*2/sr);
+%                 data1=filtfilt(b,a,data);
                 
                 if handles.p.whichPlot==10
                     %Calculate the moving variance
@@ -344,15 +351,25 @@ if (handles.p.whichPlot~=11)
                     case {9,10} %Spikes 500 
                         fpass=[500 5000];
                 end
+
+                %20th order filter
                 bpFilt = designfilt('bandpassiir','FilterOrder',20, ...
                     'HalfPowerFrequency1',fpass(1),'HalfPowerFrequency2',fpass(2), ...
                     'SampleRate',floor(handles.draq_p.ActualRate));
                 
-%                  bpFilt = designfilt('highpassiir','FilterOrder',2, ...
-%                     'PassbandFrequency',fpass(1),'Passbandripple',0.2, ...
-%                     'SampleRate',floor(handles.draq_p.ActualRate));
 
-                 data1=filtfilt(bpFilt,data);
+                data1=filtfilt(bpFilt,data);
+
+                %                  %From erpimage
+                %                  %bandpass filter the data 3rd order
+                %                  [B A]=butter(3,fpass*2/floor(handles.draq_p.ActualRate));
+                %                  data1=filtfilt(B,A,data);
+
+
+                %From wave_clus amp_detect
+%                 sr=floor(handles.draq_p.ActualRate);
+%                 [b,a]=ellip(2,0.1,40,[fpass(1) fpass(2)]*2/sr);
+%                 data1=filtfilt(b,a,data);
                 
                 if handles.p.whichPlot==10
                     %Calculate the moving variance

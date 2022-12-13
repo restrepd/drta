@@ -614,7 +614,8 @@ function openFile_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-[FileName,PathName] = uigetfile({'*.rhd';'*.dg'},'Select rhd or dg file to open');
+[FileName,PathName] = uigetfile({'*.*'},'Select rhd or dg file to open');
+% [FileName,PathName] = uigetfile({'*.rhd';'*.dg';'*.edf'},'Select rhd or dg file to open');
 % [FileName,PathName] = uigetfile('*.dg','Select rhd or dg file to open');
 handles.p.fullName=[PathName,FileName];
 handles.p.FileName=FileName;
@@ -631,6 +632,9 @@ if strcmp(FileName(end-2:end),'.dg')
     drtaOpenDG_Callback(hObject, eventdata, handles);
 end
 
+if strcmp(FileName(end-2:end),'edf')
+    open_edf_Callback(hObject, eventdata, handles);
+end
 
 
 function drtaSetTrialDuration_Callback(hObject, eventdata, handles)
@@ -681,3 +685,173 @@ function drtaPreTime_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+
+
+% --- Executes on button press in open_rhd.
+function open_edf_Callback(hObject, eventdata, handles)
+% hObject    handle to open_rhd (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+FileName=handles.p.FileName;
+set(handles.drtaWhichFile,'String',FileName);
+
+% if exist([handles.p.fullName(1:end-3),'mat'],'file')==2
+%     load([handles.p.fullName(1:end-3),'mat']);
+%     try
+%         handles.draq_p=params;
+%         handles.draq_d=data;
+%     catch
+%         handles.draq_p=draq_p;
+%         handles.draq_d=draq_d;
+%     end
+% else
+%     %Setup the matlab header file
+%     [handles.draq_p,handles.draq_d]=drta_read_Intan_RHD2000_header(handles.p.fullName,handles.p.which_protocol,handles);
+% end
+
+%Setup the .mat file
+if isfile([handles.p.fullName(1:end-4) '_edf.mat'])==0
+    
+    einf=edfinfo(handles.p.fullName);
+    data=edfread(handles.p.fullName);
+
+    %Names of columns
+    colnames=data.Properties.VariableNames;
+
+    %Output data array
+    data_out=zeros(einf.NumSamples(1)*einf.NumDataRecords,einf.NumSignals);
+   
+    channel_labels=einf.SignalLabels;
+    for chNo=1:einf.NumSignals
+        eval(['these_records=data.' colnames{chNo} ';'])
+        ii=0;
+        for ii_records=1:einf.NumDataRecords
+            this_record=these_records{ii_records};
+            data_out(ii+1:ii+einf.NumSamples(1),chNo)=this_record;
+            ii=ii+einf.NumSamples(1);
+        end
+        fprintf(1, ['Read out column No %d ' channel_labels{chNo} '\n'],chNo)
+    end
+   
+    
+    no_columns=einf.NumSignals;
+    no_samples=einf.NumSamples(1)*einf.NumDataRecords;
+    maxLFP=einf.DigitalMax(1);
+    minLFP=einf.DigitalMin(1);
+    save([handles.p.fullName(1:end-4) '_edf.mat'],'data_out','no_columns','no_samples','maxLFP','minLFP','-v7.3') 
+
+    fprintf(1, 'Clearing data and data_out\n')
+    clear data_out
+    fprintf(1, 'Cleared data_out \n')
+    clear data
+    fprintf(1, 'Cleared data \n')
+
+end
+ 
+%Setup the matlab header file
+[handles.draq_p,handles.draq_d]=drta_edf_header([handles.p.fullName(1:end-4) '_edf.mat'],handles);
+ptr_file=matfile([handles.p.fullName(1:end-4) '_edf.mat']);
+ 
+handles.draq_p.dgordra=4;  
+handles.p.trialNo=1;
+
+scaling = handles.draq_p.scaling;
+offset = handles.draq_p.offset;
+
+handles.draq_p.no_spike_ch=16;
+handles.draq_p.daq_gain=1;
+handles.draq_p.prev_ylim(1:17)=4000;
+handles.draq_p.no_chans=22;
+handles.draq_p.acquire_display_start=0;
+handles.draq_p.inp_max=10;
+
+
+if exist('drta_p')==1
+    if isfield(drta_p,'doSubtract')
+        handles.p.doSubtract=drta_p.doSubtract;
+        handles.p.subtractCh=drta_p.subtractCh;
+    else
+        handles.p.doSubtract=0;
+        handles.p.subtractCh=[18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18];
+    end
+else
+    handles.p.doSubtract=0;
+    handles.p.subtractCh=[18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18];
+end
+
+for (ii=1:handles.draq_p.no_spike_ch)
+    try
+        v_max=(handles.draq_p.prev_ylim(ii)*handles.draq_p.pre_gain*handles.draq_p.daq_gain/1000000);
+        v_min=-(handles.draq_p.prev_ylim(ii)*handles.draq_p.pre_gain*handles.draq_p.daq_gain/1000000);
+        handles.draq_p.nat_max(ii)=(v_max-offset)/scaling;
+        handles.draq_p.nat_min(ii)=(v_min-offset)/scaling;
+        handles.draq_p.fig_max(ii)=0.12+(0.80/handles.draq_p.no_spike_ch)*(ii-0.5)+0.92*0.85/handles.draq_p.no_spike_ch;
+        handles.draq_p.fig_min(ii)=0.12+(0.80/handles.draq_p.no_spike_ch)*(ii-0.5);
+    catch
+        v_max=(handles.draq_p.prev_ylim(ii)*handles.draq_p.pre_gain(ii)*handles.draq_p.daq_gain/1000000);
+        v_min=-(handles.draq_p.prev_ylim(ii)*handles.draq_p.pre_gain(ii)*handles.draq_p.daq_gain/1000000);
+        handles.draq_p.nat_max(ii)=(v_max-offset)/scaling;
+        handles.draq_p.nat_min(ii)=(v_min-offset)/scaling;
+        handles.draq_p.fig_max(ii)=0.12+(0.80/handles.draq_p.no_spike_ch)*(ii-0.5)+0.92*0.85/handles.draq_p.no_spike_ch;
+        handles.draq_p.fig_min(ii)=0.12+(0.80/handles.draq_p.no_spike_ch)*(ii-0.5);
+    end
+
+end
+
+handles.p.trial_ch_processed=ones(16,handles.draq_d.noTrials);
+handles.p.trial_allch_processed=ones(1,handles.draq_d.noTrials);
+
+if (exist('drta_p')~=0)
+    handles.p.threshold=drta_p.threshold;
+
+    if (isfield(drta_p,'ch_processed')~=0)
+        handles.p.ch_processed=drta_p.ch_processed;
+    end
+    if (isfield(drta_p,'trial_ch_processed')~=0)
+        handles.p.trial_ch_processed=drta_p.trial_ch_processed;
+    end
+    if (isfield(drta_p,'trial_allch_processed')~=0)
+        handles.p.trial_allch_processed=drta_p.trial_allch_processed;
+    end
+    if (isfield(drta_p,'upper_limit')~=0)
+        handles.p.upper_limit=drta_p.upper_limit;
+        handles.p.lower_limit=drta_p.lower_limit;
+    end
+    if isfield(drta_p,'exc_sn')
+        handles.p.exc_sn=drta_p.exc_sn;
+%         handles.p.exc_sn_thr=drta_p.exc_sn_thr;
+%         handles.p.exc_sn_ch=drta_p.exc_sn_ch;
+    end
+    
+end
+
+
+handles.p.trialNo=length(handles.draq_d.t_trial);
+
+
+handles.p.lfp.maxLFP=ptr_file.maxLFP;
+handles.p.lfp.minLFP=ptr_file.minLFP;
+
+
+% Update handles structure
+guidata(hObject, handles);
+
+
+%Open threshold window
+h=drtaThresholdSnips;
+handles.w.drtaThresholdSnips=h;
+drtaUpdateAllHandlespw(hObject,handles);
+drtaThresholdSnips('updateHandles',h,eventdata,handles);
+
+%Open browse traces
+h=drtaBrowseTraces;
+handles.w.drtaBrowseTraces=h;
+% Update handles structure
+guidata(hObject, handles);
+% Update handles structure here and elsewhere
+drtaUpdateAllHandlespw(hObject, handles);
+drtaBrowseTraces('updateHandles',h,eventdata,handles);
+drtaBrowseTraces('updateBrowseTraces',h);
