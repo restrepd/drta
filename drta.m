@@ -89,6 +89,7 @@ handles.p.read_entire_file=0;
 handles.p.setThr=0;
 handles.p.thrToSet=0;
 handles.p.which_protocol=1;
+handles.upload_edf=0;
 
 handles.trial_duration=9;
 handles.pre_dt=6;
@@ -743,17 +744,25 @@ if isfile([handles.p.fullName(1:end-4) '_edf.mat'])==0
     minLFP=einf.DigitalMin(1);
     save([handles.p.fullName(1:end-4) '_edf.mat'],'data_out','no_columns','no_samples','maxLFP','minLFP','-v7.3') 
 
-    fprintf(1, 'Clearing data and data_out\n')
-    clear data_out
-    fprintf(1, 'Cleared data_out \n')
-    clear data
-    fprintf(1, 'Cleared data \n')
+    [system,maxsize,endian]=computer;
+
+    switch system
+        case {'PCWIN','PCWIN64'}
+            fprintf(1, 'Data were not cleared because this is a PC\n')
+        otherwise
+            fprintf(1, 'Clearing data and data_out\n')
+            clear data_out
+            fprintf(1, 'Cleared data_out \n')
+            clear data
+            fprintf(1, 'Cleared data \n')
+    end
 
 end
  
 %Setup the matlab header file
 [handles.draq_p,handles.draq_d]=drta_edf_header([handles.p.fullName(1:end-4) '_edf.mat'],handles);
 ptr_file=matfile([handles.p.fullName(1:end-4) '_edf.mat']);
+handlespf.ptr_file=ptr_file;
  
 handles.draq_p.dgordra=4;  
 handles.p.trialNo=1;

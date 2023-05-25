@@ -12,6 +12,8 @@ if isempty(auto_sign)
     auto_sign=1;
 end
 
+ do_notch60=1;
+
 %Location of plots
 left_axis=0.17;
 right_axis=0.78;
@@ -106,15 +108,22 @@ if (handles.p.whichPlot~=11)
     %Display analog records
     if (handles.p.which_display==1)
         %Display all traces
-        
-        
+
+       
+        if do_notch60==1
+            notch60HzFilt = designfilt('bandstopiir','FilterOrder',2, ...
+                'HalfPowerFrequency1',59,'HalfPowerFrequency2',61, ...
+                'DesignMethod','butter','SampleRate',floor(handles.draq_p.ActualRate));
+            data=filtfilt(notch60HzFilt,data);
+        end
+
         %Now proceed to plot all channels
         switch handles.p.whichPlot
             case 1
                 %Raw data
                 data1=data;
-%             case 2
-%                 %Raw data -mean
+                %             case 2
+                %                 %Raw data -mean
 %                 szdata=size(data);
 %                 baseline=zeros(szdata(1),szdata(2));
 %                 mean_data=mean(data,1);
@@ -134,7 +143,7 @@ if (handles.p.whichPlot~=11)
                     case 6 %Gamma1 35-65
                         fpass=[35 65];
                     case 7 %Gamma2 65-95
-                        fpass=[65 95];;
+                        fpass=[65 95];
                     case 8 %Gamma 35-95
                         fpass=[35 95];
                     case {9,10} %Spikes 500-5000
@@ -316,11 +325,18 @@ if (handles.p.whichPlot~=11)
         s_handle(ii)=subplot('Position', [left_axis bottom right_axis height]);
         
         
-        
-        notch60HzFilt = designfilt('bandstopiir','FilterOrder',2, ...
-            'HalfPowerFrequency1',59,'HalfPowerFrequency2',61, ...
-            'DesignMethod','butter','SampleRate',floor(handles.draq_p.ActualRate));
-        
+
+        %         notch60HzFilt = designfilt('bandstopiir','FilterOrder',2, ...
+        %             'HalfPowerFrequency1',59,'HalfPowerFrequency2',61, ...
+        %             'DesignMethod','butter','SampleRate',floor(handles.draq_p.ActualRate));
+
+        if do_notch60==1
+            notch60HzFilt = designfilt('bandstopiir','FilterOrder',2, ...
+                'HalfPowerFrequency1',59,'HalfPowerFrequency2',61, ...
+                'DesignMethod','butter','SampleRate',floor(handles.draq_p.ActualRate));
+            data=filtfilt(notch60HzFilt,data);
+        end
+
         %Now proceed to plot this channel
         switch handles.p.whichPlot
             case 1
