@@ -623,7 +623,7 @@ handles.p.FileName=FileName;
 handles.p.PathName=PathName;
 % Update handles structure
 guidata(hObject, handles);
-  
+   
 
 if strcmp(FileName(end-2:end),'rhd')
     open_rhd_Callback(hObject, eventdata, handles);

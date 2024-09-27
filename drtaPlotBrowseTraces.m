@@ -141,7 +141,7 @@ if (handles.p.whichPlot~=11)
                     case 5 %Beta 15-36
                         fpass=[15 30];
                     case 6 %Gamma1 35-65
-                        fpass=[35 65];
+                        fpass=[35 45];
                     case 7 %Gamma2 65-95
                         fpass=[65 95];
                     case 8 %Gamma 35-95
@@ -429,15 +429,15 @@ if (handles.p.whichPlot~=11)
         hold off
         
         
-        plot(data1(ii_from:ii_to,CHID(ii)),'-b');
+        plot(data1(ii_from:ii_to,CHID(ii)),'-b');    
         hold on
         
-%         Commented out plot the trace to use in a figure for publication
-%         figure(1)
-%         time=(1:length(data1(ii_from:ii_to,CHID(ii))))/handles.draq_p.ActualRate;
-%         plot(time,data1(ii_from:ii_to,CHID(ii)),'-b');
-%         ylim([-2500 2500])
-%         
+        % Commented out plot the trace to use in a figure for publication
+        % figure(1)
+        % time=(1:length(data1(ii_from:ii_to,CHID(ii))))/handles.draq_p.ActualRate;
+        % plot(time,data1(ii_from:ii_to,CHID(ii)),'-b');
+        % ylim([-2500 2500])
+
         %This is equation 3.1 of Quiroga et al Neural Comp 16:1661 (2004)
         %         quiroga_thr=4*median(abs(data1(ii_from:ii_to,CHID(ii)))/0.6745);
         %         plot([ii_from ii_to], [quiroga_thr quiroga_thr],'-c');

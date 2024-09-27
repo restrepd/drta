@@ -78,7 +78,7 @@ for (ii=18:handles.draq_p.no_chans-1)
     this_data=[];
     %this_data=data_this_trial(floor((ii-1)*handles.draq_p.ActualRate*handles.draq_p.sec_per_trigger):floor(ii*handles.draq_p.ActualRate*handles.draq_p.sec_per_trigger));
     this_data=data(:,ii);
-    
+     
     plot(this_data(ii_from:ii_to),'-b');
     
     if (handles.p.exc_sn==1)&(ii==19)

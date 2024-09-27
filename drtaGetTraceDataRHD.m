@@ -123,11 +123,25 @@ if exist('amplifier_data')~=0
     
     %Enter the electrode recordings
     %Note: for some reason Connor has the 32 channels on....
-    if size(amplifier_data,1)==16
-        data_this_trial(:,1:16)=amplifier_data';
-    else
-        data_this_trial(:,1:16)=amplifier_data(9:24,:)';
+    %And Praveen had 15
+    switch size(amplifier_data,1)
+        case 20
+            data_this_trial(:,1:20)=amplifier_data';
+        case 16
+            data_this_trial(:,1:16)=amplifier_data';
+        case 24
+            data_this_trial(:,1:16)=amplifier_data(9:24,:)';
     end
+    
+    % if size(amplifier_data,1)==20
+    %     data_this_trial(:,1:20)=amplifier_data';
+    % else
+    %     if size(amplifier_data,1)==16
+    %         data_this_trial(:,1:16)=amplifier_data';
+    %     else
+    %         data_this_trial(:,1:16)=amplifier_data(9:24,:)';
+    %     end
+    % end
 else
     szadc=size(board_adc_data);
     %Setup the output as used by drta
@@ -164,6 +178,7 @@ if handles.draq_d.num_board_dig_in_channels>0
         data_this_trial(:,17)=1000*board_dig_in_data(8,:);
     end
     
+    data_this_trial(:,23)=data_this_trial(:,22);
     data_this_trial(:,22)=digital_input;
     
 
