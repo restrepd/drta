@@ -180,7 +180,7 @@ for signal_group = 1:number_of_signal_groups
     signal_group_enabled = fread(fid, 1, 'int16');
     signal_group_num_channels = fread(fid, 1, 'int16');
     signal_group_num_amp_channels = fread(fid, 1, 'int16');
-
+  
     if (signal_group_num_channels > 0 && signal_group_enabled > 0)
         new_channel(1).port_name = signal_group_name;
         new_channel(1).port_prefix = signal_group_prefix;
@@ -1118,7 +1118,7 @@ if ~isempty(digital_input)
 else
     total_length=board_adc_index;
 end
-
+ 
 fprintf(1, 'Sorting trials...\n');
 sorted_trials=sortrows(trials_to_sort);
   

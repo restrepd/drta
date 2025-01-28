@@ -120,7 +120,7 @@ if exist('amplifier_data')~=0
     %Setup the output as used by drta
     %data_this_trial=zeros(length(digital_input),22);
     data_this_trial=zeros(szad(2),22);
-    
+      
     %Enter the electrode recordings
     %Note: for some reason Connor has the 32 channels on....
     %And Praveen had 15
@@ -130,6 +130,8 @@ if exist('amplifier_data')~=0
         case 16
             data_this_trial(:,1:16)=amplifier_data';
         case 24
+            data_this_trial(:,1:16)=amplifier_data(9:24,:)';
+        case 32
             data_this_trial(:,1:16)=amplifier_data(9:24,:)';
     end
     

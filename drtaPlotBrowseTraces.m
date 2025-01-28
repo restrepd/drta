@@ -133,11 +133,11 @@ if (handles.p.whichPlot~=11)
                 %Filter with different bandwidths
                 switch handles.p.whichPlot
                     case 2
-                        fpass=[4 100];
+                        fpass=[1 100];
                     case 3 %High Theta 6-10
                         fpass=[6 14];
                     case 4 %Theta 2-12
-                        fpass=[2 14];
+                        fpass=[1 4];
                     case 5 %Beta 15-36
                         fpass=[15 30];
                     case 6 %Gamma1 35-65
@@ -339,61 +339,55 @@ if (handles.p.whichPlot~=11)
 
         %Now proceed to plot this channel
         switch handles.p.whichPlot
-            case 1
-                %Raw data
-                data1=data;
             case 2
-                %Raw data -mean
-                szdata=size(data);
-                baseline=zeros(szdata(1),szdata(2));
-                mean_data=mean(data,1);
-                baseline=repmat(mean_data,szdata(1),1);
-                data1=data-baseline;
-            case {3,4,5,6,7,8,9,10}
-                %Filter with different bandwidths
-                switch handles.p.whichPlot
-                    case 3 %High Theta 6-10
-                        fpass=[6 10];
-                    case 4 %Theta 2-12
-                        fpass=[2 12];
-                    case 5 %Beta 15-36
-                        fpass=[15 30];
-                    case 6 %Gamma1 35-65
-                        fpass=[35 65];
-                    case 7 %Gamma2 65-95
-                        fpass=[65 95];;
-                    case 8 %Gamma 35-95
-                        fpass=[35 95];
-                    case {9,10} %Spikes 500 
-                        fpass=[500 5000];
-                end
+                fpass=[1 100];
+            case 3 %High Theta 6-10
+                fpass=[6 14];
+            case 4 %Theta 2-12
+                fpass=[1 4];
+            case 5 %Beta 15-36
+                fpass=[15 30];
+            case 6 %Gamma1 35-65
+                fpass=[35 45];
+            case 7 %Gamma2 65-95
+                fpass=[65 95];
+            case 8 %Gamma 35-95
+                fpass=[35 95];
+            case {9,10} %Spikes 500-5000
+                fpass=[500 5000];
 
-                %20th order filter
-                bpFilt = designfilt('bandpassiir','FilterOrder',20, ...
-                    'HalfPowerFrequency1',fpass(1),'HalfPowerFrequency2',fpass(2), ...
-                    'SampleRate',floor(handles.draq_p.ActualRate));
-                
-
-                data1=filtfilt(bpFilt,data);
-
-                %                  %From erpimage
-                %                  %bandpass filter the data 3rd order
-                %                  [B A]=butter(3,fpass*2/floor(handles.draq_p.ActualRate));
-                %                  data1=filtfilt(B,A,data);
-
-
-                %From wave_clus amp_detect
-%                 sr=floor(handles.draq_p.ActualRate);
-%                 [b,a]=ellip(2,0.1,40,[fpass(1) fpass(2)]*2/sr);
-%                 data1=filtfilt(b,a,data);
-                
-                if handles.p.whichPlot==10
-                    %Calculate the moving variance
-                    data1=movvar(data1,ceil(0.05*handles.draq_p.ActualRate));
-                end
         end
-        
-        
+
+        if handles.p.whichPlot==1
+            %Raw data
+            data1=data;
+        else
+            %20th order filter
+            bpFilt = designfilt('bandpassiir','FilterOrder',20, ...
+                'HalfPowerFrequency1',fpass(1),'HalfPowerFrequency2',fpass(2), ...
+                'SampleRate',floor(handles.draq_p.ActualRate));
+
+
+            data1=filtfilt(bpFilt,data);
+
+            %                  %From erpimage
+            %                  %bandpass filter the data 3rd order
+            %                  [B A]=butter(3,fpass*2/floor(handles.draq_p.ActualRate));
+            %                  data1=filtfilt(B,A,data);
+
+
+            %From wave_clus amp_detect
+            %                 sr=floor(handles.draq_p.ActualRate);
+            %                 [b,a]=ellip(2,0.1,40,[fpass(1) fpass(2)]*2/sr);
+            %                 data1=filtfilt(b,a,data);
+
+            if handles.p.whichPlot==10
+                %Calculate the moving variance
+                data1=movvar(data1,ceil(0.05*handles.draq_p.ActualRate));
+            end
+
+        end
+  
         
         if (handles.p.doSubtract==1)
             data2=data1;
