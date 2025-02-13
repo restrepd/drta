@@ -334,7 +334,7 @@ if (data_present)
     t_amplifier = zeros(1, int64(num_amplifier_samples));
      
     switch which_protocol
-        case {1,3,5,6,7,8}
+        case {1,3,5,6,7,8,9}
         board_dig_in_raw = zeros(1, int64(num_board_dig_in_samples));
     end
     board_dig_in_data = zeros(num_board_dig_in_channels, int64(num_board_dig_in_samples));
@@ -382,7 +382,7 @@ if (data_present)
         draq_d.offset_start_adc(i)=ftell(fid);
         if (num_board_adc_channels > 0)
             switch which_protocol
-                case {1,3,5,6,7,8}
+                case {1,3,5,6,7,8,9}
                     board_adc_data = fread(fid, [num_samples_per_data_block, num_board_adc_channels], 'uint16')';
                 case {2,4}
                     board_adc_data(:, board_adc_index:(board_adc_index + num_samples_per_data_block - 1)) = fread(fid, [num_samples_per_data_block, num_board_adc_channels], 'uint16')';
@@ -392,7 +392,7 @@ if (data_present)
         draq_d.offset_start_dig(i)=ftell(fid);
         if (num_board_dig_in_channels > 0)
             switch which_protocol
-                case {1,3,5,6,7,8}
+                case {1,3,5,6,7,8,9}
                 board_dig_in_raw(board_dig_in_index:(board_dig_in_index + num_samples_per_data_block - 1)) = fread(fid, num_samples_per_data_block, 'uint16');
                 case {2,4}
                 board_dig_in_raw = fread(fid, num_samples_per_data_block, 'uint16');
@@ -433,7 +433,7 @@ if (data_present)
     fprintf(1, 'Parsing data...\n');
     
     switch which_protocol
-        case {1,3,5,6,7,8}
+        case {1,3,5,6,7,8,9}
             % Extract digital input channels to separate variables.
             for i=1:num_board_dig_in_channels
                 mask = 2^(board_dig_in_channels(i).native_order) * ones(size(board_dig_in_raw));
@@ -512,6 +512,10 @@ switch which_protocol
         %working memory
         draq_p.sec_before_trigger=2;
         draq_p.sec_per_trigger=13.5;
+    case 9
+        %Schoppa laser
+        draq_p.sec_before_trigger=4;
+        draq_p.sec_per_trigger=9;
 end
 
 draq_p.pre_gain=0;
@@ -532,7 +536,7 @@ draq_d.board_dig_in_channels=board_dig_in_channels;
 if ~isempty(board_dig_in_data)
     
     switch which_protocol
-        case {1,3,6}
+        case {1,3,6,9}
             digital_input=board_dig_in_data(1,:)+2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
                 +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:)...
                 +64*board_dig_in_data(7,:);
@@ -540,7 +544,7 @@ if ~isempty(board_dig_in_data)
                 +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:);
             digital_input_no2=2*board_dig_in_data(2,:)+4*board_dig_in_data(3,:)...
                 +8*board_dig_in_data(4,:)+16*board_dig_in_data(5,:)+32*board_dig_in_data(6,:);
-            
+            pffft=1;
         otherwise
             for ii=1:num_board_dig_in_channels
                 if ii==1
@@ -549,7 +553,7 @@ if ~isempty(board_dig_in_data)
                     digital_input=digital_input+(2^(ii-1))*board_dig_in_data(ii,:);
                 end
             end
-            
+
             if num_board_dig_in_channels>=2
                 for ii=2:num_board_dig_in_channels
                     if ii==2
@@ -565,20 +569,20 @@ if ~isempty(board_dig_in_data)
 else
     digital_input=[];
 end
- 
+
 %Find the trials
 at_end=0;
 ii=1;
 trials_to_sort=[];
 full_trial_start=[];
 full_trial_end=[];
- 
-    
+
+
 switch which_protocol
-    case {1,5,6,8}
+    case {1,5,6,8,9}
         %Find the full trials (excluding short trials)
         while at_end==0
-            
+
             %Find trial (skip changes in the signal that are not actually bonified
             %trials
             found_bonified=0;
@@ -591,7 +595,7 @@ switch which_protocol
                         ii_step=find(digital_input_no2(ii+delta_ii_first-1:end)>6,1,'first');
                         if ~isempty(ii_step)
                             dt_step1=ii_step/draq_p.ActualRate;
-                            
+
                             if (dt_step1>0.9)&(digital_input_no2(ii+delta_ii_first-1+ii_step-1)==18)
                                 %Is there an odor on for >2.4 sec and <4 sec
                                 ii_odor_on=find(digital_input_no2(ii+delta_ii_first-1+ii_step-1:end)<18,1,'first');
@@ -603,7 +607,7 @@ switch which_protocol
                             end
                         end
                     end
-                     
+
                 case 5
                     %The trial starts with an output of 1
                     delta_ii_first=find(digital_input(ii:end)==1,1,'first');
@@ -612,7 +616,7 @@ switch which_protocol
                         ii_step=find(digital_input(ii+delta_ii_first-1:end)>1,1,'first');
                         if ~isempty(ii_step)
                             dt_step1=ii_step/draq_p.ActualRate;
-                            
+
                             if (dt_step1>0.9)&(digital_input(ii+delta_ii_first-1+ii_step-1)>=2)&(digital_input(ii+delta_ii_first-1+ii_step-1)<=7)
                                 %Is there an odor on for >2.4 sec and <4 sec
                                 ii_odor_on=find(digital_input(ii+delta_ii_first-1+ii_step-1:end)~=digital_input(ii+delta_ii_first-1+ii_step-1),1,'first');
@@ -624,17 +628,17 @@ switch which_protocol
                             end
                         end
                     end
-                     
+
                 case 6
-                    %dropcspm_hf 
-                     %The trial starts with an output of 6
+                    %dropcspm_hf
+                    %The trial starts with an output of 6
                     delta_ii_first=find(digital_input_no2(ii:end)==6,1,'first');
                     if ~isempty(delta_ii_first)
                         %The final valve on step has to last at least 0.5 sec
                         ii_step=find(digital_input_no2(ii+delta_ii_first-1:end)>6,1,'first');
                         if ~isempty(ii_step)
                             dt_step1=ii_step/draq_p.ActualRate;
-                            
+
                             if (dt_step1>0.5)&(digital_input_no2(ii+delta_ii_first-1+ii_step-1)==18)
                                 %Is there an odor on for >2.4 sec and <5.5 sec
                                 ii_odor_on=find(digital_input_no2(ii+delta_ii_first-1+ii_step-1:end)<18,1,'first');
@@ -646,8 +650,8 @@ switch which_protocol
                             end
                         end
                     end
-                    
-                case 8 
+
+                case 8
                     %Working memory
                     %The trial starts with an output of 1
                     shift_digital_input=bitand(digital_input,1+2+4+8+16);
@@ -657,7 +661,7 @@ switch which_protocol
                         ii_step=find(shift_digital_input(ii+delta_ii_first-1:end)>1,1,'first');
                         if ~isempty(ii_step)
                             dt_step1=ii_step/draq_p.ActualRate;
-                            
+
                             if (dt_step1>0.05)&(shift_digital_input(ii+delta_ii_first-1+ii_step-1)>=2)&(shift_digital_input(ii+delta_ii_first-1+ii_step-1)<=7)
                                 %Is there an odor on for >2.4 sec and <4 sec
                                 ii_odor_on=find(shift_digital_input(ii+delta_ii_first-1+ii_step-1:end)~=shift_digital_input(ii+delta_ii_first-1+ii_step-1),1,'first');
@@ -669,14 +673,53 @@ switch which_protocol
                             end
                         end
                     end
+
+                case 9
+                    %Schoppa laser
+                    %The trial starts with an output of 6
+                    delta_ii_first=find(digital_input_no2(ii:end)==58,1,'first');
+                    if ~isempty(delta_ii_first)
+                        %The final valve on step has to last at least 0.9 sec
+                        ii_step=find(digital_input_no2(ii+delta_ii_first-1:end)<58,1,'first');
+                        if ~isempty(ii_step)
+                            found_bonified=1;
+                        end
+                    end
             end
-            
-            
-             
+
+
+
             if found_bonified==1
                 %Found a bonified digital signal
                 %Find the interval
                 switch which_protocol
+                    case 9
+                        ii=ii+delta_ii_first-1;
+                        delta_ii_last=(draq_p.sec_per_trigger-draq_p.sec_before_trigger)*draq_p.ActualRate;
+                       
+                        if ii+delta_ii_last<length(digital_input_no2)
+ 
+                            %Full trial
+                            draq_d.noTrials=draq_d.noTrials+1;
+                            %Trial start time goes in column 1
+                            trials_to_sort(draq_d.noTrials,1)=((ii-draq_p.sec_before_trigger*draq_p.ActualRate)/draq_p.ActualRate);
+                            %Block no at start of trial goes in column 2
+                            trials_to_sort(draq_d.noTrials,2)=ceil((trials_to_sort(draq_d.noTrials,1)*draq_p.ActualRate)/num_samples_per_data_block);
+                            %Block no at end of trial goes in column 3
+                            trials_to_sort(draq_d.noTrials,3)=trials_to_sort(draq_d.noTrials,2)+ceil((draq_p.sec_per_trigger*draq_p.ActualRate)/num_samples_per_data_block);
+                            full_trial_start(draq_d.noTrials)=ii-draq_p.sec_before_trigger*draq_p.ActualRate;
+                            full_trial_end(draq_d.noTrials)=full_trial_start(draq_d.noTrials)+draq_p.sec_per_trigger*draq_p.ActualRate;
+                            
+%                             figure(11)
+%                             plot([1:length(shift_digital_input(floor(trials_to_sort(draq_d.noTrials,1)*draq_p.ActualRate):ceil((trials_to_sort(draq_d.noTrials,1)+draq_p.sec_per_trigger)*draq_p.ActualRate)))]/draq_p.ActualRate...
+%                                 ,shift_digital_input(floor(trials_to_sort(draq_d.noTrials,1)*draq_p.ActualRate):ceil((trials_to_sort(draq_d.noTrials,1)+draq_p.sec_per_trigger)*draq_p.ActualRate)))
+%                             pffft=1;
+                            
+                            
+                            ii=ii+delta_ii_last;
+                        else
+                            at_end=1;
+                        end
                     case 8
                         ii=ii+delta_ii_first-1;
                         delta_ii_last=(draq_p.sec_per_trigger-draq_p.sec_before_trigger)*draq_p.ActualRate;
